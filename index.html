@@ -1,0 +1,2870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة العيادة الذكي - النسخة المتكاملة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- ===== القائمة الجانبية ===== -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>عيادتي</h2>
+            </div>
+
+            <!-- قسم التقارير المالية -->
+            <div class="reports-section">
+                <div class="reports-header">
+                    <span class="icon">📊</span>
+                    <span>التقارير المالية</span>
+                </div>
+                <div class="reports-buttons-grid">
+                    <button onclick="reportToday()" class="btn-mini btn-today">📅 اليوم</button>
+                    <button onclick="reportThisMonth()" class="btn-mini btn-month">📆 الشهر</button>
+                    <button onclick="reportThisYear()" class="btn-mini btn-year">📋 السنة</button>
+                </div>
+                <div class="custom-report-box">
+                    <label>تقرير مخصص:</label>
+                    <div class="date-inputs">
+                        <input type="date" id="date_from" class="date-input" title="من تاريخ">
+                        <input type="date" id="date_to" class="date-input" title="إلى تاريخ">
+                    </div>
+                    <button onclick="reportCustom()" class="btn-download-main">📥 تحميل التقرير</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- روابط الأقسام -->
+            <ul class="nav-links">
+                <li onclick="showSection('dashboard')" class="active"><span class="icon">🏠</span><span>الرئيسية</span>
+                </li>
+                <li onclick="showSection('patients')"><span class="icon">👥</span><span>إدارة المرضى</span></li>
+                <li onclick="showSection('inventory')"><span class="icon">📦</span><span>إدارة المخزون</span></li>
+                <li onclick="showSection('appointments'); loadAppointments();"><span class="icon">📅</span><span>جدول
+                        المواعيد</span></li>
+                <li onclick="showSection('pharmacy-section')"><span class="icon">💊</span><span>إدارة الصيدلية</span>
+                </li>
+                <li onclick="showSection('invoices')"><span class="icon">💰</span><span>الفواتير</span></li>
+                <li onclick="showSection('expenses')"><span class="icon">💸</span><span>المصروفات</span></li>
+                <li onclick="showSection('doctor-shares')"><span class="icon">👨‍⚕️</span><span>نسب الأطباء</span></li>
+                <li onclick="showSection('patient-balance')"><span class="icon">⚖️</span><span>أرصدة المرضى</span></li>
+                <li onclick="showSection('insurance-companies')"><span class="icon">🏢</span><span>شركات التأمين</span>
+                </li>
+                <li onclick="showSection('patient-insurance')"><span class="icon">📋</span><span>ملفات تأمينية</span>
+                </li>
+                <li onclick="showSection('insurance-claims')"><span class="icon">📄</span><span>مطالبات التأمين</span>
+                </li>
+                <li onclick="showSection('warehouses')"><span class="icon">🏬</span><span>المخازن</span></li>
+                <li onclick="showSection('suppliers')"><span class="icon">🚚</span><span>الموردين</span></li>
+                <li onclick="showSection('purchase-orders')"><span class="icon">📦</span><span>أوامر الشراء</span></li>
+                <li onclick="showSection('stock-transfers')"><span class="icon">🔄</span><span>تحويل مخزني</span></li>
+                <li onclick="showSection('stock-waste')"><span class="icon">⚠️</span><span>تالف وهالك</span></li>
+                <li onclick="showSection('stock-ledger')"><span class="icon">📒</span><span>سجل المخزون</span></li>
+                <li onclick="showSection('labs')"><span class="icon">🔬</span><span>المعامل</span></li>
+                <li onclick="showSection('lab-requests')"><span class="icon">📋</span><span>طلبات المعامل</span></li>
+                <li onclick="showSection('lab-templates')"><span class="icon">📝</span><span>قوالب الطلبات</span></li>
+                <li onclick="showSection('employees')"><span class="icon">👥</span><span>الموظفين</span></li>
+                <li onclick="showSection('attendance')"><span class="icon">⏰</span><span>الحضور والانصراف</span></li>
+                <li onclick="showSection('tasks')"><span class="icon">✓</span><span>المهام</span></li>
+                <li onclick="showSection('salaries')"><span class="icon">💰</span><span>المرتبات</span></li>
+                <li onclick="showSection('shifts')"><span class="icon">🔄</span><span>الشفتات</span></li>
+                <li onclick="showSection('employee-reports')"><span class="icon">📊</span><span>تقارير الأداء</span>
+                </li>
+                <li onclick="showSection('campaigns')"><span class="icon">📢</span><span>الحملات التسويقية</span></li>
+                <li onclick="showSection('scheduled-messages')"><span class="icon">⏰</span><span>الرسائل المجدولة</span>
+                </li>
+                <li onclick="showSection('message-templates')"><span class="icon">📝</span><span>قوالب الرسائل</span>
+                </li>
+                <li onclick="showSection('patient-segments')"><span class="icon">👥</span><span>فئات المرضى</span></li>
+                <li onclick="showSection('message-log')"><span class="icon">📋</span><span>سجل الرسائل</span></li>
+                <li onclick="showSection('loyalty')"><span class="icon">⭐</span><span>نظام الولاء والنقاط</span></li>
+                <li onclick="showSection('notifications')">
+                    <span class="icon">🔔</span><span>التنبيهات</span>
+                    <span id="notification-badge" class="badge" style="display: none;">0</span>
+                </li>
+                <li onclick="showSection('notification-settings')"><span class="icon">⚙️</span><span>إعدادات
+                        التنبيهات</span></li>
+                <li onclick="showSection('notification-templates')"><span class="icon">📝</span><span>قوالب
+                        التنبيهات</span></li>
+                <li onclick="showSection('notification-log')"><span class="icon">📋</span><span>سجل التنبيهات</span>
+                </li>
+                <li onclick="showSection('patient-analytics')"><span class="icon">📊</span><span>تحليلات المرضى</span>
+                </li>
+                <li onclick="showSection('appointment-analytics')"><span class="icon">⏱️</span><span>تحليلات
+                        المواعيد</span></li>
+                <li onclick="showSection('procedure-analytics')"><span class="icon">🔬</span><span>تحليلات
+                        العمليات</span></li>
+                <li onclick="showSection('inventory-analytics')"><span class="icon">📦</span><span>تحليلات
+                        المخزون</span></li>
+                <li onclick="showSection('ai-reports')"><span class="icon">🤖</span><span>تقارير ذكية</span></li>
+                <!-- زر تسجيل الخروج -->
+                <li onclick="logout()" class="logout-btn">
+                    <span class="icon">🚪</span><span>تسجيل خروج</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <p>الإصدار 2.0</p>
+            </div>
+        </aside>
+
+        <!-- ===== المحتوى الرئيسي ===== -->
+        <main class="main-content">
+            <!-- قسم تسجيل الدخول -->
+            <section id="login-page" class="content-section login-fullpage">
+                <div class="login-container">
+                    <div class="login-box">
+                        <div class="login-header">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3048/3048122.png" alt="Logo"
+                                class="login-logo">
+                            <h2>نظام إدارة العيادة الذكي</h2>
+                            <p>تسجيل الدخول إلى النظام</p>
+                        </div>
+
+                        <div class="login-form">
+                            <div class="input-group">
+                                <label for="login-username">
+                                    <i class="fas fa-user"></i>
+                                    اسم المستخدم أو البريد الإلكتروني
+                                </label>
+                                <input type="text" id="login-username" placeholder="أدخل اسم المستخدم"
+                                    autocomplete="off">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="login-password">
+                                    <i class="fas fa-lock"></i>
+                                    كلمة المرور
+                                </label>
+                                <input type="password" id="login-password" placeholder="أدخل كلمة المرور">
+                            </div>
+
+                            <div class="login-options">
+                                <label class="remember-me">
+                                    <input type="checkbox" id="remember-me"> تذكرني
+                                </label>
+                                <a href="#" onclick="showForgotPassword()">نسيت كلمة المرور؟</a>
+                            </div>
+
+                            <button onclick="login()" class="login-btn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                تسجيل الدخول
+                            </button>
+                        </div>
+
+                        <div class="login-footer">
+                            <p>نسخة تجريبية v2.0</p>
+                            <p>جميع الحقوق محفوظة &copy; 2026</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم الرئيسية -->
+            <section id="dashboard" class="content-section" style="display:block;">
+                <div class="section-header">
+                    <h1>لوحة التحكم الرئيسية</h1>
+                    <button onclick="clearDashboard()" class="btn-reset">🔄 تصفير النظام</button>
+                </div>
+
+                <div class="stats-grid">
+                    <!-- البطاقات الأساسية -->
+                    <div class="card card-blue" onclick="showSection('patients')">
+                        <h3>عدد الكشوفات اليوم</h3>
+                        <p id="visit-count">0</p>
+                        <span class="card-hint">اضغط لعرض المرضى</span>
+                    </div>
+                    <div class="card card-purple" onclick="showSection('patients')">
+                        <h3>مرضى جدد اليوم</h3>
+                        <p id="today-patients-count">0</p>
+                        <span class="card-hint">اضغط لعرض المرضى</span>
+                    </div>
+                    <div class="card card-green">
+                        <h3>إيرادات اليوم</h3>
+                        <p id="today-revenue">0 ج.م</p>
+                        <span class="card-hint">إجمالي الكشوفات اليوم</span>
+                    </div>
+                    <div class="card card-red" onclick="showSection('inventory')">
+                        <h3>نقص المخزون</h3>
+                        <p id="low-stock-count">0</p>
+                        <div id="low-stock-list" class="low-stock-list"></div>
+                        <span class="card-hint">اضغط لإدارة المخزن</span>
+                    </div>
+                    <div class="card card-orange" onclick="showSection('appointments'); loadAppointments();">
+                        <h3>مواعيد اليوم</h3>
+                        <p id="today-appointments-count">0</p>
+                        <div id="today-appointments-list" class="appointments-mini-list"></div>
+                        <span class="card-hint">اضغط لعرض المواعيد</span>
+                    </div>
+                    <div class="card card-teal" onclick="showSection('pharmacy-section')">
+                        <h3>أدوية الصيدلية</h3>
+                        <p id="pharmacy-count">0</p>
+                        <span class="card-hint">اضغط للإدارة</span>
+                    </div>
+                    <div class="card card-gold" onclick="showSection('invoices')">
+                        <h3>فواتير اليوم</h3>
+                        <p id="today-invoices-count">0</p>
+                        <span class="card-hint">إجمالي: <span id="today-invoices-total">0</span> ج.م</span>
+                    </div>
+                    <div class="card card-brown" onclick="showSection('expenses')">
+                        <h3>مصروفات اليوم</h3>
+                        <p id="today-expenses-count">0</p>
+                        <span class="card-hint">إجمالي: <span id="today-expenses-total">0</span> ج.م</span>
+                    </div>
+                    <div class="card card-cyan" onclick="showSection('doctor-shares')">
+                        <h3>نسب الأطباء</h3>
+                        <p id="doctors-count">0</p>
+                        <span class="card-hint">الأطباء المسجلين</span>
+                    </div>
+                    <div class="card card-mint" onclick="showSection('patient-balance')">
+                        <h3>أرصدة المرضى</h3>
+                        <p id="patients-with-balance">0</p>
+                        <span class="card-hint">عملاء عليهم مديونيات</span>
+                    </div>
+
+                    <!-- بطاقات التأمين -->
+                    <div class="card card-insurance" onclick="showSection('insurance-companies')">
+                        <h3>شركات التأمين</h3>
+                        <p id="insurance-companies-count">0</p>
+                        <span class="card-hint">عدد الشركات المسجلة</span>
+                    </div>
+                    <div class="card card-insurance-package" onclick="showSection('insurance-companies')">
+                        <h3>باقات التأمين</h3>
+                        <p id="insurance-packages-count">0</p>
+                        <span class="card-hint">إجمالي الباقات المتاحة</span>
+                    </div>
+                    <div class="card card-insured" onclick="showSection('patient-insurance')">
+                        <h3>مرضى مؤمن عليهم</h3>
+                        <p id="insured-patients-count">0 / 0</p>
+                        <span class="card-hint">نشط / منتهي</span>
+                    </div>
+                    <div class="card card-claims" onclick="showSection('insurance-claims')">
+                        <h3>مطالبات معلقة</h3>
+                        <p id="pending-claims-count">0</p>
+                        <span class="card-hint">بقيمة: <span id="pending-claims-value">0</span> ج.م</span>
+                    </div>
+                    <div class="card card-paid" onclick="showSection('insurance-claims')">
+                        <h3>مدفوعات التأمين</h3>
+                        <p id="total-paid-claims">0 ج.م</p>
+                        <span class="card-hint">إجمالي المدفوع من الشركات</span>
+                    </div>
+
+                    <!-- بطاقات المخازن -->
+                    <div class="card card-warehouse" onclick="showSection('warehouses')">
+                        <h3>المخازن</h3>
+                        <p id="total-warehouses">0</p>
+                        <span class="card-hint">إجمالي المخازن</span>
+                    </div>
+                    <div class="card card-supplier" onclick="showSection('suppliers')">
+                        <h3>الموردين</h3>
+                        <p id="suppliers-count">0</p>
+                        <span class="card-hint">عدد الموردين</span>
+                    </div>
+                    <div class="card card-po" onclick="showSection('purchase-orders')">
+                        <h3>أوامر شراء</h3>
+                        <p id="pending-orders">0</p>
+                        <span class="card-hint">معلقة: <span id="pending-orders-value">0</span> ج.م</span>
+                    </div>
+                    <div class="card card-transfer" onclick="showSection('stock-transfers')">
+                        <h3>تحويلات</h3>
+                        <p id="today-transfers">0</p>
+                        <span class="card-hint">تحويلات اليوم</span>
+                    </div>
+                    <div class="card card-waste" onclick="showSection('stock-waste')">
+                        <h3>تالف وهالك</h3>
+                        <p id="waste-month">0</p>
+                        <span class="card-hint">هذا الشهر</span>
+                    </div>
+
+                    <!-- بطاقات المعامل -->
+                    <div class="card card-lab" onclick="showSection('labs')">
+                        <h3>المعامل</h3>
+                        <p id="labs-count">0</p>
+                        <span class="card-hint">عدد المعامل</span>
+                    </div>
+                    <div class="card card-lab-request" onclick="showSection('lab-requests')">
+                        <h3>طلبات معلقة</h3>
+                        <p id="pending-lab-requests">0</p>
+                        <span class="card-hint">في انتظار النتيجة</span>
+                    </div>
+                    <div class="card card-lab-ready" onclick="showSection('lab-requests')">
+                        <h3>جاهز للتسليم</h3>
+                        <p id="ready-lab-requests">0</p>
+                        <span class="card-hint">نتائج وصلت</span>
+                    </div>
+
+                    <!-- بطاقات الموظفين -->
+                    <div class="card card-employees" onclick="showSection('employees')">
+                        <h3>الموظفين</h3>
+                        <p id="employees-count">0</p>
+                        <span class="card-hint">إجمالي الموظفين</span>
+                    </div>
+                    <div class="card card-present" onclick="showSection('attendance')">
+                        <h3>الحضور اليوم</h3>
+                        <p id="today-present">0</p>
+                        <span class="card-hint">من إجمالي <span id="total-employees">0</span></span>
+                    </div>
+                    <div class="card card-tasks" onclick="showSection('tasks')">
+                        <h3>مهام معلقة</h3>
+                        <p id="pending-tasks">0</p>
+                        <span class="card-hint">المهام غير المنجزة</span>
+                    </div>
+                    <div class="card card-messages" onclick="showSection('messages')">
+                        <h3>رسائل غير مقروءة</h3>
+                        <p id="unread-messages">0</p>
+                        <span class="card-hint">منذ آخر زيارة</span>
+                    </div>
+
+                    <!-- بطاقات التواصل والتسويق -->
+                    <div class="card card-campaign" onclick="showSection('campaigns')">
+                        <h3>الحملات النشطة</h3>
+                        <p id="active-campaigns">0</p>
+                        <span class="card-hint">من إجمالي <span id="total-campaigns">0</span></span>
+                    </div>
+                    <div class="card card-template" onclick="showSection('message-templates')">
+                        <h3>قوالب الرسائل</h3>
+                        <p id="templates-count">0</p>
+                        <span class="card-hint">قوالب جاهزة للاستخدام</span>
+                    </div>
+                    <div class="card card-scheduled" onclick="showSection('scheduled-messages')">
+                        <h3>رسائل مجدولة</h3>
+                        <p id="scheduled-count">0</p>
+                        <span class="card-hint">تنتظر الإرسال</span>
+                    </div>
+                    <div class="card card-segments" onclick="showSection('patient-segments')">
+                        <h3>فئات المرضى</h3>
+                        <p id="segments-count">0</p>
+                        <span class="card-hint">تقسيمات مختلفة</span>
+                    </div>
+                    <div class="card card-messages-sent" onclick="showSection('message-log')">
+                        <h3>رسائل اليوم</h3>
+                        <p id="today-messages">0</p>
+                        <span class="card-hint">تم إرسالها</span>
+                    </div>
+
+                    <!-- بطاقات نظام الولاء -->
+                    <div class="card card-loyalty-points" onclick="showSection('loyalty')">
+                        <h3>إجمالي النقاط</h3>
+                        <p id="total-points">0</p>
+                        <span class="card-hint">نقاط متاحة للاستبدال</span>
+                    </div>
+                    <div class="card card-loyalty-redeemed" onclick="showSection('loyalty')">
+                        <h3>نقاط مستبدلة</h3>
+                        <p id="total-redeemed">0</p>
+                        <span class="card-hint">إجمالي ما تم استبداله</span>
+                    </div>
+                    <div class="card card-loyalty-patients" onclick="showSection('loyalty')">
+                        <h3>مرضى لديهم نقاط</h3>
+                        <p id="patients-with-points">0</p>
+                        <span class="card-hint">مشاركون في البرنامج</span>
+                    </div>
+                    <div class="card card-loyalty-top" onclick="showSection('loyalty')">
+                        <h3>أعلى رصيد</h3>
+                        <p id="top-points">0</p>
+                        <span class="card-hint">أعلى مريض في النقاط</span>
+                    </div>
+
+                    <!-- بطاقات التنبيهات -->
+                    <div class="card card-notification" onclick="showSection('notifications')">
+                        <h3>التنبيهات</h3>
+                        <p id="unread-notifications">0</p>
+                        <span class="card-hint">غير مقروءة</span>
+                    </div>
+                    <div class="card card-invoice-alert" onclick="showSection('notifications')">
+                        <h3>فواتير غير مدفوعة</h3>
+                        <p id="unpaid-invoices-alert">0</p>
+                        <span class="card-hint">بقيمة <span id="unpaid-invoices-total">0</span> ج.م</span>
+                    </div>
+                    <div class="card card-appointment-alert" onclick="showSection('notifications')">
+                        <h3>مواعيد اليوم</h3>
+                        <p id="today-appointments-alert">0</p>
+                        <span class="card-hint">تذكير قبل <span id="reminder-time">30</span> دقيقة</span>
+                    </div>
+
+                    <!-- بطاقات الشيفتات وتقارير الأداء -->
+                    <div class="card card-shifts" onclick="showSection('shifts')">
+                        <h3>الشيفتات</h3>
+                        <p id="shifts-count">0</p>
+                        <span class="card-hint">إجمالي الشيفتات</span>
+                    </div>
+
+                    <div class="card card-employee-performance" onclick="showSection('employee-reports')">
+                        <h3>أداء الموظفين</h3>
+                        <p id="employee-performance-rate">0%</p>
+                        <span class="card-hint">نسبة الإنجاز</span>
+                    </div>
+
+                    <!-- بطاقات التحليلات المتقدمة -->
+                    <div class="card card-analytics-age" onclick="showSection('patient-analytics')">
+                        <h3>📊 تحليلات المرضى</h3>
+                        <div class="analytics-preview">
+                            <span>0-18: <strong id="age-0-18">0</strong></span>
+                            <span>19-35: <strong id="age-19-35">0</strong></span>
+                            <span>36-50: <strong id="age-36-50">0</strong></span>
+                            <span>51-65: <strong id="age-51-65">0</strong></span>
+                            <span>65+: <strong id="age-65-plus">0</strong></span>
+                        </div>
+                        <span class="card-hint">توزيع أعمار المرضى</span>
+                    </div>
+
+                    <div class="card card-analytics-wait" onclick="showSection('appointment-analytics')">
+                        <h3>⏱️ متوسط الانتظار</h3>
+                        <p id="avg-wait-time">0 د</p>
+                        <span class="card-hint">مدة انتظار المرضى</span>
+                    </div>
+
+                    <div class="card card-analytics-proc" onclick="showSection('procedure-analytics')">
+                        <h3>🔬 العمليات</h3>
+                        <div class="mini-progress">
+                            <span>مكتمل: <strong id="proc-completed">0</strong></span>
+                            <span>معلق: <strong id="proc-pending">0</strong></span>
+                        </div>
+                        <span class="card-hint">حسب الحالة</span>
+                    </div>
+
+                    <div class="card card-analytics-inv" onclick="showSection('inventory-analytics')">
+                        <h3>📦 استهلاك المخزون</h3>
+                        <p id="monthly-consumption">0</p>
+                        <span class="card-hint">وحدة هذا الشهر</span>
+                    </div>
+
+                    <div class="card card-ai-report" onclick="showSection('ai-reports')">
+                        <h3>🤖 تقارير ذكية</h3>
+                        <p id="ai-report-count">0</p>
+                        <span class="card-hint">توصيات للشهر القادم</span>
+                    </div>
+
+                    <!-- الملخص السريع -->
+                    <div class="quick-summary">
+                        <div class="summary-card">
+                            <h4>📊 ملخص سريع</h4>
+                            <div class="summary-row"><span>إجمالي المرضى:</span><span id="total-patients">0</span></div>
+                            <div class="summary-row"><span>إجمالي الزيارات:</span><span id="total-visits">0</span></div>
+                            <div class="summary-row" style="color: #27ae60; font-weight: bold;"><span>إجمالي
+                                    الإيرادات:</span><span id="total-revenue">0 ج.م</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول أداء الموظفين -->
+                <table id="employee-performance-table" class="data-table" style="margin-top: 30px;">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>الوظيفة</th>
+                            <th>أيام الحضور</th>
+                            <th>المهام</th>
+                            <th>نسبة الإنجاز</th>
+                            <th>المبيعات</th>
+                            <th>التقييم</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المرضى -->
+            <section id="patients" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>👥 إدارة المرضى</h1>
+                    <button class="btn-primary" onclick="openAddPatientModal()"><span class="icon">➕</span> مريض
+                        جديد</button>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="searchPatients" placeholder="🔍 بحث عن مريض..." onkeyup="searchPatients()">
+                </div>
+                <table id="patients-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>رقم الموبايل</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المخزون -->
+            <section id="inventory" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📦 المخزون والمستلزمات</h1>
+                </div>
+                <div class="inventory-add-box">
+                    <h3>إضافة صنف جديد</h3>
+                    <div class="form-row">
+                        <input type="text" id="inv_name" placeholder="اسم الصنف">
+                        <input type="number" id="inv_qty" placeholder="الكمية">
+                    </div>
+                    <div class="form-row">
+                        <input type="number" id="inv_price" placeholder="السعر">
+                        <input type="number" id="inv_limit" placeholder="حد التنبيه">
+                    </div>
+                    <button class="btn-primary" onclick="addNewInventoryItem()">➕ إضافة للمخزن</button>
+                </div>
+                <table id="inventory-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الصنف</th>
+                            <th>الكمية</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المواعيد -->
+            <section id="appointments" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📅 جدول المواعيد</h1>
+                </div>
+                <div class="appointment-form-container">
+                    <h3>حجز موعد جديد</h3>
+                    <div class="form-row">
+                        <select id="app_patient_select" class="full-width"></select>
+                    </div>
+                    <div class="form-row">
+                        <input type="date" id="app_date">
+                        <input type="time" id="app_time">
+                    </div>
+                    <div class="form-row">
+                        <select id="app_type">
+                            <option value="كشف">كشف جديد</option>
+                            <option value="استشارة">استشارة</option>
+                            <option value="متابعة">متابعة</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="saveAppointment()">✔️ تأكيد الحجز</button>
+                </div>
+                <table id="appointments-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>المريض</th>
+                            <th>النوع</th>
+                            <th>رقم الموبايل</th>
+                            <th>التاريخ</th>
+                            <th>الوقت</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الصيدلية -->
+            <section id="pharmacy-section" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>💊 صيدلية العيادة</h1>
+                    <button onclick="document.getElementById('drugModal').style.display='block'" class="btn-primary">➕
+                        إضافة دواء</button>
+                </div>
+                <div class="pharmacy-controls">
+                    <input type="text" id="drugSearch" placeholder="🔍 بحث عن دواء..." onkeyup="searchDrugs()">
+                </div>
+                <table id="pharmacy-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الدواء</th>
+                            <th>الكمية</th>
+                            <th>سعر البيع</th>
+                            <th>تاريخ الصلاحية</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الفواتير -->
+            <section id="invoices" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>💰 الفواتير الإلكترونية</h1>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button onclick="openManualInvoiceModal()" class="btn-primary">➕ إضافة فاتورة يدوية</button>
+                    </div>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>فواتير اليوم</span><strong id="invoice-today-count">0</strong>
+                    </div>
+                    <div class="stat-mini-box"><span>إجمالي اليوم</span><strong id="invoice-today-total">0 ج.م</strong>
+                    </div>
+                    <div class="stat-mini-box"><span>غير مدفوعة</span><strong id="invoice-unpaid">0</strong></div>
+                    <div class="stat-mini-box"><span>فواتير ضريبية</span><strong id="invoice-tax-count">0</strong></div>
+                </div>
+                <table id="invoices-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الفاتورة</th>
+                            <th>المريض</th>
+                            <th>التاريخ</th>
+                            <th>المبلغ</th>
+                            <th>الضريبة</th>
+                            <th>الإجمالي</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المصروفات -->
+            <section id="expenses" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>💸 المصروفات</h1>
+                    <button onclick="openExpenseModal()" class="btn-primary">➕ إضافة مصروف</button>
+                </div>
+                <div class="expense-categories">
+                    <button onclick="filterExpenses('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterExpenses('rent')" class="btn-filter">إيجار</button>
+                    <button onclick="filterExpenses('salaries')" class="btn-filter">مرتبات</button>
+                    <button onclick="filterExpenses('electricity')" class="btn-filter">كهرباء</button>
+                    <button onclick="filterExpenses('water')" class="btn-filter">مياه</button>
+                    <button onclick="filterExpenses('maintenance')" class="btn-filter">صيانة</button>
+                    <button onclick="filterExpenses('other')" class="btn-filter">أخرى</button>
+                </div>
+                <table id="expenses-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>البند</th>
+                            <th>الوصف</th>
+                            <th>المبلغ</th>
+                            <th>طريقة الدفع</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم نسب الأطباء -->
+            <section id="doctor-shares" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>👨‍⚕️ نسب الأطباء</h1>
+                    <button onclick="openDoctorModal()" class="btn-primary">➕ إضافة طبيب</button>
+                </div>
+                <div class="doctors-grid"></div>
+            </section>
+
+            <!-- قسم أرصدة المرضى -->
+            <section id="patient-balance" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⚖️ أرصدة المرضى</h1>
+                    <button onclick="addToBalance()" class="btn-primary">💰 إضافة رصيد</button>
+                </div>
+                <div class="balance-summary">
+                    <div class="balance-box credit">
+                        <h4>إجمالي الدائن (للمرضى)</h4>
+                        <p id="total-credit">0 ج.م</p>
+                    </div>
+                    <div class="balance-box debit">
+                        <h4>إجمالي المدين (عليهم)</h4>
+                        <p id="total-debit">0 ج.م</p>
+                    </div>
+                </div>
+                <table id="balance-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>المريض</th>
+                            <th>الرصيد</th>
+                            <th>آخر معاملة</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم شركات التأمين -->
+            <section id="insurance-companies" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🏢 شركات التأمين</h1>
+                    <button onclick="openInsuranceCompanyModal()" class="btn-primary">➕ إضافة شركة</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>عدد الشركات</span><strong id="companies-count">0</strong></div>
+                    <div class="stat-mini-box"><span>عدد الباقات</span><strong id="packages-count">0</strong></div>
+                    <div class="stat-mini-box"><span>مرضى مؤمن عليهم</span><strong
+                            id="insured-patients-count2">0</strong></div>
+                    <div class="stat-mini-box"><span>مطالبات معلقة</span><strong id="pending-claims-count2">0</strong>
+                    </div>
+                </div>
+                <table id="insurance-companies-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الشركة</th>
+                            <th>رقم الاتصال</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>عدد الباقات</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الباقات -->
+            <div id="packages-section" style="margin-top: 30px; display: none;">
+                <div class="section-header" style="margin-bottom: 15px;">
+                    <h3>📦 باقات شركة: <span id="selected-company-name"></span></h3>
+                    <button onclick="openPackageModal()" class="btn-primary">➕ إضافة باقة</button>
+                </div>
+                <table id="packages-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الباقة</th>
+                            <th>نسبة التغطية</th>
+                            <th>الحد الأقصى</th>
+                            <th>الأقساط</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- قسم الملفات التأمينية -->
+            <section id="patient-insurance" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📋 الملفات التأمينية</h1>
+                    <button onclick="openPatientInsuranceModal()" class="btn-primary">➕ إضافة ملف تأميني</button>
+                </div>
+                <table id="patient-insurance-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>المريض</th>
+                            <th>شركة التأمين</th>
+                            <th>الباقة</th>
+                            <th>رقم العضوية</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم مطالبات التأمين -->
+            <section id="insurance-claims" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📄 مطالبات التأمين</h1>
+                    <button onclick="openClaimModal()" class="btn-primary">➕ إنشاء مطالبة</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>إجمالي المطالبات</span><strong id="total-claims">0</strong></div>
+                    <div class="stat-mini-box"><span>المطلوب دفعه</span><strong id="total-claimed">0 ج.م</strong></div>
+                    <div class="stat-mini-box"><span>تم دفعه</span><strong id="total-paid">0 ج.م</strong></div>
+                    <div class="stat-mini-box"><span>المتبقي</span><strong id="total-remaining">0 ج.م</strong></div>
+                </div>
+                <div class="expense-categories" style="margin: 20px 0;">
+                    <button onclick="filterClaims('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterClaims('pending')" class="btn-filter">معلق</button>
+                    <button onclick="filterClaims('approved')" class="btn-filter">معتمد</button>
+                    <button onclick="filterClaims('paid')" class="btn-filter">مدفوع</button>
+                    <button onclick="filterClaims('rejected')" class="btn-filter">مرفوض</button>
+                </div>
+                <table id="claims-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>رقم المطالبة</th>
+                            <th>المريض</th>
+                            <th>شركة التأمين</th>
+                            <th>الفترة</th>
+                            <th>المبلغ</th>
+                            <th>المدفوع</th>
+                            <th>المتبقي</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المخازن المتقدمة -->
+            <section id="warehouses" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🏬 إدارة المخازن</h1>
+                    <button onclick="openWarehouseModal()" class="btn-primary">➕ إضافة مخزن</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>إجمالي المخازن</span><strong id="total-warehouses">0</strong></div>
+                    <div class="stat-mini-box"><span>رئيسي</span><strong id="main-warehouses">0</strong></div>
+                    <div class="stat-mini-box"><span>فرعي</span><strong id="sub-warehouses">0</strong></div>
+                    <div class="stat-mini-box"><span>إجمالي الأصناف</span><strong id="total-items-all">0</strong></div>
+                </div>
+                <table id="warehouses-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم المخزن</th>
+                            <th>النوع</th>
+                            <th>الموقع</th>
+                            <th>المسؤول</th>
+                            <th>عدد الأصناف</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الموردين -->
+            <section id="suppliers" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🚚 الموردين</h1>
+                    <button onclick="openSupplierModal()" class="btn-primary">➕ إضافة مورد</button>
+                </div>
+                <table id="suppliers-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم المورد</th>
+                            <th>رقم الاتصال</th>
+                            <th>البريد</th>
+                            <th>حساب جاري</th>
+                            <th>آخر توريد</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم أوامر الشراء -->
+            <section id="purchase-orders" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📦 أوامر الشراء</h1>
+                    <button onclick="openPurchaseOrderModal()" class="btn-primary">➕ أمر شراء جديد</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>معلقة</span><strong id="po-pending">0</strong></div>
+                    <div class="stat-mini-box"><span>مكتملة</span><strong id="po-completed">0</strong></div>
+                    <div class="stat-mini-box"><span>إجمالي المشتريات</span><strong id="po-total">0 ج.م</strong></div>
+                    <div class="stat-mini-box"><span>غير المدفوع</span><strong id="po-unpaid">0 ج.م</strong></div>
+                </div>
+                <div class="expense-categories">
+                    <button onclick="filterPO('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterPO('pending')" class="btn-filter">معلق</button>
+                    <button onclick="filterPO('approved')" class="btn-filter">معتمد</button>
+                    <button onclick="filterPO('received')" class="btn-filter">مستلم</button>
+                    <button onclick="filterPO('cancelled')" class="btn-filter">ملغي</button>
+                </div>
+                <table id="purchase-orders-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الأمر</th>
+                            <th>المورد</th>
+                            <th>التاريخ</th>
+                            <th>عدد الأصناف</th>
+                            <th>الإجمالي</th>
+                            <th>المدفوع</th>
+                            <th>المتبقي</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم تحويل مخزني -->
+            <section id="stock-transfers" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🔄 تحويل مخزني</h1>
+                    <button onclick="openTransferModal()" class="btn-primary">➕ تحويل جديد</button>
+                </div>
+                <table id="transfers-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>من مخزن</th>
+                            <th>إلى مخزن</th>
+                            <th>الصنف</th>
+                            <th>الكمية</th>
+                            <th>بواسطة</th>
+                            <th>حالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم تالف وهالك -->
+            <section id="stock-waste" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⚠️ تالف وهالك</h1>
+                    <button onclick="openWasteModal()" class="btn-primary">➕ تسجيل تالف</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>هذا الشهر</span><strong id="waste-month-total">0 ج.م</strong></div>
+                    <div class="stat-mini-box"><span>هذا العام</span><strong id="waste-year-total">0 ج.م</strong></div>
+                    <div class="stat-mini-box"><span>إجمالي التالف</span><strong id="waste-all-total">0 ج.م</strong>
+                    </div>
+                </div>
+                <table id="waste-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المخزن</th>
+                            <th>الصنف</th>
+                            <th>الكمية</th>
+                            <th>القيمة</th>
+                            <th>السبب</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم سجل حركات المخزون -->
+            <section id="stock-ledger" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📒 سجل حركات المخزون</h1>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="ledger-warehouse-filter" onchange="loadStockLedger()">
+                            <option value="all">كل المخازن</option>
+                        </select>
+                        <select id="ledger-type-filter" onchange="loadStockLedger()">
+                            <option value="all">كل الحركات</option>
+                            <option value="purchase">توريد</option>
+                            <option value="sale">صرف</option>
+                            <option value="transfer">تحويل</option>
+                            <option value="waste">تالف</option>
+                            <option value="adjust">تسوية</option>
+                        </select>
+                        <input type="date" id="ledger-from" onchange="loadStockLedger()">
+                        <input type="date" id="ledger-to" onchange="loadStockLedger()">
+                        <button onclick="exportLedger()" class="btn-secondary">📥 تصدير</button>
+                    </div>
+                </div>
+                <table id="ledger-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المخزن</th>
+                            <th>الصنف</th>
+                            <th>الحركة</th>
+                            <th>الكمية</th>
+                            <th>الرصيد بعد</th>
+                            <th>المرجع</th>
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المعامل -->
+            <section id="labs" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🔬 إدارة المعامل</h1>
+                    <button onclick="openLabModal()" class="btn-primary">➕ إضافة معمل</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>إجمالي المعامل</span><strong id="total-labs">0</strong></div>
+                    <div class="stat-mini-box"><span>طلبات معلقة</span><strong id="total-pending-lab">0</strong></div>
+                    <div class="stat-mini-box"><span>هذا الشهر</span><strong id="monthly-lab-requests">0</strong></div>
+                    <div class="stat-mini-box"><span>حسابات المعامل</span><strong id="total-lab-balance">0 ج.م</strong>
+                    </div>
+                </div>
+                <table id="labs-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم المعمل</th>
+                            <th>رقم الاتصال</th>
+                            <th>الشخص المسؤول</th>
+                            <th>عدد الطلبات</th>
+                            <th>حساب جاري</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم طلبات المعامل -->
+            <section id="lab-requests" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📋 طلبات المعامل</h1>
+                    <button onclick="openLabRequestModal()" class="btn-primary">➕ طلب جديد</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>معلقة</span><strong id="request-pending">0</strong></div>
+                    <div class="stat-mini-box"><span>تحت التنفيذ</span><strong id="request-processing">0</strong></div>
+                    <div class="stat-mini-box"><span>جاهزة</span><strong id="request-ready">0</strong></div>
+                    <div class="stat-mini-box"><span>تم التسليم</span><strong id="request-delivered">0</strong></div>
+                </div>
+                <div class="expense-categories">
+                    <button onclick="filterLabRequests('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterLabRequests('pending')" class="btn-filter">معلق</button>
+                    <button onclick="filterLabRequests('processing')" class="btn-filter">تحت التنفيذ</button>
+                    <button onclick="filterLabRequests('ready')" class="btn-filter">جاهز</button>
+                    <button onclick="filterLabRequests('delivered')" class="btn-filter">تم التسليم</button>
+                </div>
+                <table id="lab-requests-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الطلب</th>
+                            <th>المريض</th>
+                            <th>المعمل</th>
+                            <th>نوع التحليل</th>
+                            <th>تاريخ الطلب</th>
+                            <th>موعد الاستلام</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم قوالب الطلبات -->
+            <section id="lab-templates" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📝 قوالب الطلبات</h1>
+                    <button onclick="openLabTemplateModal()" class="btn-primary">➕ قالب جديد</button>
+                </div>
+                <table id="lab-templates-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم القالب</th>
+                            <th>المعمل</th>
+                            <th>التحاليل المطلوبة</th>
+                            <th>السعر</th>
+                            <th>عدد مرات الاستخدام</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الموظفين -->
+            <section id="employees" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>👥 إدارة الموظفين</h1>
+                    <button onclick="openEmployeeModal()" class="btn-primary">➕ إضافة موظف</button>
+                </div>
+                <table id="employees-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>اسم المستخدم</th>
+                            <th>الوظيفة</th>
+                            <th>القسم</th>
+                            <th>الحالة</th>
+                            <th>آخر دخول</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الحضور والانصراف -->
+            <section id="attendance" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⏰ الحضور والانصراف</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="checkIn()" class="btn-primary">✅ تسجيل حضور</button>
+                        <button onclick="checkOut()" class="btn-secondary">🔴 تسجيل انصراف</button>
+                    </div>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>الحضور اليوم</span><strong id="today-present">0</strong></div>
+                </div>
+                <table id="attendance-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>الموظف</th>
+                            <th>وقت الحضور</th>
+                            <th>وقت الانصراف</th>
+                            <th>الموقع</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المهام -->
+            <section id="tasks" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>✓ إدارة المهام</h1>
+                    <button onclick="openTaskModal()" class="btn-primary">➕ مهمة جديدة</button>
+                </div>
+                <div class="expense-categories">
+                    <button onclick="filterTasks('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterTasks('pending')" class="btn-filter">معلق</button>
+                    <button onclick="filterTasks('in-progress')" class="btn-filter">قيد التنفيذ</button>
+                    <button onclick="filterTasks('completed')" class="btn-filter">مكتمل</button>
+                </div>
+                <table id="tasks-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>المهمة</th>
+                            <th>مسندة إلى</th>
+                            <th>الأولوية</th>
+                            <th>موعد التسليم</th>
+                            <th>الحالة</th>
+                            <th>منشئ المهمة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم المرتبات -->
+            <section id="salaries" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>💰 إدارة المرتبات</h1>
+                    <button onclick="calculateSalaries()" class="btn-primary">🔄 حساب المرتبات</button>
+                </div>
+                <table id="salaries-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>الشهر</th>
+                            <th>الراتب الأساسي</th>
+                            <th>أيام الحضور</th>
+                            <th>صافي الراتب</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الشيفتات -->
+            <section id="shifts" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🔄 إدارة الشيفتات</h1>
+                    <button onclick="openShiftModal()" class="btn-primary">➕ إضافة شيفت</button>
+                </div>
+
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box">
+                        <span>إجمالي الشيفتات</span>
+                        <strong id="total-shifts">0</strong>
+                    </div>
+                    <div class="stat-mini-box">
+                        <span>شيفتات نشطة</span>
+                        <strong id="active-shifts">0</strong>
+                    </div>
+                    <div class="stat-mini-box">
+                        <span>موظفين اليوم</span>
+                        <strong id="today-shift-employees">0</strong>
+                    </div>
+                    <div class="stat-mini-box">
+                        <span>ساعات العمل</span>
+                        <strong id="total-work-hours">0</strong>
+                    </div>
+                </div>
+
+                <div class="expense-categories">
+                    <button onclick="filterShifts('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterShifts('morning')" class="btn-filter">صباحي</button>
+                    <button onclick="filterShifts('evening')" class="btn-filter">مسائي</button>
+                    <button onclick="filterShifts('night')" class="btn-filter">ليلي</button>
+                </div>
+
+                <div id="shifts-list" class="shifts-grid"></div>
+            </section>
+
+            <!-- قسم تقارير الأداء -->
+            <section id="employee-reports" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📊 تقارير الأداء</h1>
+                    <button onclick="exportEmployeeReport()" class="btn-secondary">📥 تصدير تقرير</button>
+                </div>
+
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box">
+                        <span>إجمالي الموظفين</span>
+                        <strong id="total-employees-report">0</strong>
+                    </div>
+                    <div class="stat-mini-box">
+                        <span>الحضور اليوم</span>
+                        <strong id="today-attendance-report">0</strong>
+                    </div>
+                    <div class="stat-mini-box">
+                        <span>مهام مكتملة</span>
+                        <strong id="completed-tasks-report">0</strong>
+                    </div>
+                    <div class="stat-mini-box">
+                        <span>نسبة الإنجاز</span>
+                        <strong id="completion-rate">0%</strong>
+                    </div>
+                </div>
+
+                <div class="expense-categories">
+                    <button onclick="loadEmployeeReports('all')" class="btn-filter active">كل الموظفين</button>
+                    <button onclick="loadEmployeeReports('top')" class="btn-filter">الأفضل أداءً</button>
+                    <button onclick="loadEmployeeReports('attendance')" class="btn-filter">حسب الحضور</button>
+                    <button onclick="loadEmployeeReports('tasks')" class="btn-filter">حسب المهام</button>
+                </div>
+
+                <table id="employee-reports-table" class="data-table" style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>الوظيفة</th>
+                            <th>أيام الحضور</th>
+                            <th>المهام</th>
+                            <th>نسبة الإنجاز</th>
+                            <th>المبيعات</th>
+                            <th>التقييم</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الحملات التسويقية -->
+            <section id="campaigns" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📢 الحملات التسويقية</h1>
+                    <button onclick="openCampaignModal()" class="btn-primary">➕ حملة جديدة</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>نشطة</span><strong id="campaigns-active">0</strong></div>
+                    <div class="stat-mini-box"><span>منتهية</span><strong id="campaigns-ended">0</strong></div>
+                    <div class="stat-mini-box"><span>مجدولة</span><strong id="campaigns-scheduled">0</strong></div>
+                    <div class="stat-mini-box"><span>إجمالي مرسل</span><strong id="total-sent-campaigns">0</strong>
+                    </div>
+                </div>
+                <table id="campaigns-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الحملة</th>
+                            <th>الفئة المستهدفة</th>
+                            <th>تاريخ الإرسال</th>
+                            <th>الحالة</th>
+                            <th>تم الإرسال</th>
+                            <th>معدل الفتح</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم الرسائل المجدولة -->
+            <section id="scheduled-messages" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⏰ الرسائل المجدولة</h1>
+                    <button onclick="openScheduledMessageModal()" class="btn-primary">➕ جدولة رسالة</button>
+                </div>
+                <table id="scheduled-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>نوع الرسالة</th>
+                            <th>المستلم</th>
+                            <th>موعد الإرسال</th>
+                            <th>الحالة</th>
+                            <th>تم الإرسال</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم قوالب الرسائل -->
+            <section id="message-templates" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📝 قوالب الرسائل</h1>
+                    <button onclick="openMessageTemplateModal()" class="btn-primary">➕ قالب جديد</button>
+                </div>
+                <table id="message-templates-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم القالب</th>
+                            <th>النوع</th>
+                            <th>محتوى مختصر</th>
+                            <th>عدد مرات الاستخدام</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم فئات المرضى -->
+            <section id="patient-segments" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>👥 فئات المرضى</h1>
+                    <button onclick="openSegmentModal()" class="btn-primary">➕ فئة جديدة</button>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>كل المرضى</span><strong id="total-patients-segment">0</strong>
+                    </div>
+                    <div class="stat-mini-box"><span>مرضى مزمنين</span><strong id="chronic-patients">0</strong></div>
+                    <div class="stat-mini-box"><span>زيارة خلال شهر</span><strong id="monthly-visitors">0</strong></div>
+                    <div class="stat-mini-box"><span>لم يزوروا من 6ش</span><strong id="lapsed-patients">0</strong></div>
+                </div>
+                <table id="segments-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الفئة</th>
+                            <th>معايير التصنيف</th>
+                            <th>عدد المرضى</th>
+                            <th>آخر تحديث</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم سجل الرسائل -->
+            <section id="message-log" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📋 سجل الرسائل</h1>
+                    <button onclick="exportMessageLog()" class="btn-secondary">📥 تصدير</button>
+                </div>
+                <div class="expense-categories">
+                    <button onclick="filterLog('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterLog('campaign')" class="btn-filter">حملات</button>
+                    <button onclick="filterLog('scheduled')" class="btn-filter">مجدولة</button>
+                    <button onclick="filterLog('birthday')" class="btn-filter">تهنئة</button>
+                    <button onclick="filterLog('reminder')" class="btn-filter">تذكير</button>
+                </div>
+                <table id="message-log-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المستلم</th>
+                            <th>نوع الرسالة</th>
+                            <th>المحتوى</th>
+                            <th>الحالة</th>
+                            <th>تاريخ الإرسال</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم نظام الولاء -->
+            <section id="loyalty" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⭐ نظام الولاء والنقاط</h1>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="openLoyaltySettingsModal()" class="btn-secondary">⚙️ الإعدادات</button>
+                    </div>
+                </div>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>إجمالي النقاط</span><strong id="total-points">0</strong></div>
+                    <div class="stat-mini-box"><span>نقاط مستبدلة</span><strong id="total-redeemed">0</strong></div>
+                    <div class="stat-mini-box"><span>متوسط النقاط</span><strong id="avg-points">0</strong></div>
+                    <div class="stat-mini-box"><span>مرضى لديهم نقاط</span><strong id="patients-with-points">0</strong>
+                    </div>
+                </div>
+                <div style="display:flex; gap:20px; margin-bottom:20px;">
+                    <button onclick="loadLoyaltyPointsTable()" class="btn-filter active">نقاط المرضى</button>
+                    <button onclick="loadRedemptionsTable()" class="btn-filter">عمليات الاستبدال</button>
+                    <button onclick="loadTiersTable()" class="btn-filter">المستويات</button>
+                </div>
+                <div id="points-table-container">
+                    <table id="loyalty-points-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>المريض</th>
+                                <th>رقم الموبايل</th>
+                                <th>الرصيد الحالي</th>
+                                <th>النقاط مدى الحياة</th>
+                                <th>المستوى</th>
+                                <th>عدد المعاملات</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="redemptions-table-container" style="display:none;">
+                    <table id="redemptions-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>المريض</th>
+                                <th>النقاط</th>
+                                <th>قيمة الخصم</th>
+                                <th>الفاتورة</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="tiers-table-container" style="display:none;">
+                    <table id="tiers-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>المستوى</th>
+                                <th>الحد الأدنى</th>
+                                <th>نسبة الخصم</th>
+                                <th>اللون</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- قسم التنبيهات -->
+            <section id="notifications" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🔔 التنبيهات</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="markAllAsRead()" class="btn-secondary">✅ تحديد الكل كمقروء</button>
+                        <button onclick="clearAllNotifications()" class="btn-reset">🗑️ حذف الكل</button>
+                    </div>
+                </div>
+
+                <div class="expense-categories">
+                    <button onclick="filterNotifications('all')" class="btn-filter active">الكل</button>
+                    <button onclick="filterNotifications('unread')" class="btn-filter">غير مقروءة</button>
+                    <button onclick="filterNotifications('invoice')" class="btn-filter">فواتير</button>
+                    <button onclick="filterNotifications('appointment')" class="btn-filter">مواعيد</button>
+                    <button onclick="filterNotifications('stock')" class="btn-filter">مخزون</button>
+                    <button onclick="filterNotifications('task')" class="btn-filter">مهام</button>
+                </div>
+
+                <div id="notifications-list" class="notifications-list"></div>
+            </section>
+
+            <!-- قسم إعدادات التنبيهات -->
+            <section id="notification-settings" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⚙️ إعدادات التنبيهات</h1>
+                    <button onclick="saveNotificationSettings()" class="btn-primary">💾 حفظ الإعدادات</button>
+                </div>
+                <div id="settings-list" class="settings-container"></div>
+            </section>
+
+            <!-- قسم قوالب التنبيهات -->
+            <section id="notification-templates" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📝 قوالب التنبيهات</h1>
+                    <button onclick="openNotificationTemplateModal()" class="btn-primary">➕ قالب جديد</button>
+                </div>
+                <table id="notification-templates-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الحدث</th>
+                            <th>عنوان التنبيه</th>
+                            <th>المحتوى</th>
+                            <th>المستلمون</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم سجل التنبيهات -->
+            <section id="notification-log" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📋 سجل التنبيهات</h1>
+                    <button onclick="exportNotificationLog()" class="btn-secondary">📥 تصدير</button>
+                </div>
+                <table id="notification-log-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>نوع التنبيه</th>
+                            <th>المستلم</th>
+                            <th>العنوان</th>
+                            <th>الحالة</th>
+                            <th>تاريخ القراءة</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم تحليلات المرضى -->
+            <section id="patient-analytics" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📊 تحليلات المرضى</h1>
+                    <div>
+                        <button onclick="exportAnalytics('patient')" class="btn-secondary">📥 تصدير</button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- التوزيع العمري -->
+                    <div class="analytics-card">
+                        <h3>👥 التوزيع العمري</h3>
+                        <div id="age-chart" class="chart-container">
+                            <canvas id="ageChartCanvas" width="400" height="200"
+                                style="width:100%; height:200px;"></canvas>
+                        </div>
+                        <div class="stats-mini-grid" style="margin-top:15px;">
+                            <div class="stat-mini-box"><span>متوسط الأعمار</span><strong id="avg-age">0</strong></div>
+                            <div class="stat-mini-box"><span>أكبر مريض</span><strong id="max-age">0</strong></div>
+                            <div class="stat-mini-box"><span>أصغر مريض</span><strong id="min-age">0</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- التوزيع الجغرافي -->
+                    <div class="analytics-card">
+                        <h3>📍 توزيع المرضى على الخريطة</h3>
+                        <div id="map-container"
+                            style="height:200px; background:#f5f5f5; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:center;">
+                            <p>خريطة توضيحية (تحتاج API)</p>
+                        </div>
+                        <div id="top-cities-list" style="margin-top:10px;"></div>
+                    </div>
+
+                    <!-- أمراض مزمنة -->
+                    <div class="analytics-card">
+                        <h3>🩺 الأمراض المزمنة</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>المرض</th>
+                                    <th>عدد الحالات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chronic-diseases-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم تحليلات المواعيد -->
+            <section id="appointment-analytics" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>⏱️ تحليلات المواعيد</h1>
+                    <div>
+                        <select id="appointment-time-range" onchange="loadAppointmentAnalytics()">
+                            <option value="day">آخر 24 ساعة</option>
+                            <option value="week" selected>آخر أسبوع</option>
+                            <option value="month">آخر شهر</option>
+                            <option value="year">آخر سنة</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>متوسط الانتظار</span><strong id="analytics-avg-wait">0 د</strong>
+                    </div>
+                    <div class="stat-mini-box"><span>أطول انتظار</span><strong id="max-wait">0 د</strong></div>
+                    <div class="stat-mini-box"><span>أقصر انتظار</span><strong id="min-wait">0 د</strong></div>
+                    <div class="stat-mini-box"><span>مواعيد ملغاة</span><strong id="cancelled-appts">0</strong></div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- رسم بياني لأوقات الانتظار -->
+                    <div class="analytics-card">
+                        <h3>📈 أوقات الانتظار</h3>
+                        <div id="wait-time-chart"
+                            style="height:200px; background:#f5f5f5; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <p>رسم بياني - قريباً</p>
+                        </div>
+                    </div>
+
+                    <!-- ساعات الذروة -->
+                    <div class="analytics-card">
+                        <h3>⏰ ساعات الذروة</h3>
+                        <div id="peak-hours-chart"
+                            style="height:200px; background:#f5f5f5; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <p>رسم بياني - قريباً</p>
+                        </div>
+                    </div>
+
+                    <!-- أيام الأسبوع -->
+                    <div class="analytics-card">
+                        <h3>📅 توزيع المواعيد</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>اليوم</th>
+                                    <th>عدد المواعيد</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weekday-distribution"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم تحليلات العمليات -->
+            <section id="procedure-analytics" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🔬 تحليلات العمليات</h1>
+                    <button onclick="exportProcedureAnalytics()" class="btn-secondary">📥 تصدير</button>
+                </div>
+
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>إجمالي العمليات</span><strong id="total-procedures">0</strong>
+                    </div>
+                    <div class="stat-mini-box"><span>مكتملة</span><strong id="total-completed">0</strong></div>
+                    <div class="stat-mini-box"><span>نسبة النجاح</span><strong id="success-rate">0%</strong></div>
+                    <div class="stat-mini-box"><span>متوسط التكلفة</span><strong id="avg-cost">0 ج.م</strong></div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- حسب الحالة -->
+                    <div class="analytics-card">
+                        <h3>📊 حسب الحالة</h3>
+                        <div id="procedure-status-chart"
+                            style="height:150px; background:#f5f5f5; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <p>رسم بياني - قريباً</p>
+                        </div>
+                    </div>
+
+                    <!-- حسب النوع -->
+                    <div class="analytics-card">
+                        <h3>🏥 حسب النوع</h3>
+                        <div id="procedure-type-chart"
+                            style="height:150px; background:#f5f5f5; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <p>رسم بياني - قريباً</p>
+                        </div>
+                    </div>
+
+                    <!-- اتجاه شهري -->
+                    <div class="analytics-card">
+                        <h3>📈 اتجاه شهري</h3>
+                        <div id="procedure-trend-chart"
+                            style="height:150px; background:#f5f5f5; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <p>رسم بياني - قريباً</p>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="procedure-details-table" class="data-table" style="margin-top:20px;">
+                    <thead>
+                        <tr>
+                            <th>الشهر</th>
+                            <th>العمليات</th>
+                            <th>المكتملة</th>
+                            <th>المعلقة</th>
+                            <th>الملغاة</th>
+                            <th>الإيرادات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <!-- قسم تحليلات المخازن -->
+            <section id="inventory-analytics" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>📦 تحليلات المخازن</h1>
+                    <div>
+                        <select id="inventory-analytics-range" onchange="loadInventoryAnalytics()">
+                            <option value="month">شهري</option>
+                            <option value="quarter">ربع سنوي</option>
+                            <option value="year">سنوي</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-box"><span>إجمالي الاستهلاك</span><strong id="total-consumption">0</strong>
+                    </div>
+                    <div class="stat-mini-box"><span>إجمالي التوريد</span><strong id="total-supply">0</strong></div>
+                    <div class="stat-mini-box"><span>معدل الدوران</span><strong id="turnover-rate">0</strong></div>
+                    <div class="stat-mini-box"><span>أصناف ناقصة</span><strong id="low-stock-analytics">0</strong></div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- استهلاك وتوريد -->
+                    <div class="analytics-card">
+                        <h3>📊 استهلاك vs توريد</h3>
+                        <div id="inventory-chart"
+                            style="height:200px; background:#f5f5f5; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <p>رسم بياني - قريباً</p>
+                        </div>
+                    </div>
+
+                    <!-- الأكثر استهلاكاً -->
+                    <div class="analytics-card">
+                        <h3>🔥 الأكثر استهلاكاً</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>الصنف</th>
+                                    <th>الكمية</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-consumed-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <h3>📋 تفاصيل استهلاك شهرية</h3>
+                    <table id="monthly-consumption-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>الشهر</th>
+                                <th>الاستهلاك</th>
+                                <th>التوريد</th>
+                                <th>صافي التغير</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- قسم تقارير الذكاء الاصطناعي -->
+            <section id="ai-reports" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h1>🤖 تقارير الذكاء الاصطناعي</h1>
+                    <button onclick="generateAIReport()" class="btn-primary">✨ توليد تقرير جديد</button>
+                </div>
+
+                <div class="ai-insights-grid"
+                    style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px;">
+                    <div class="insight-card" style="background: #e3f2fd; padding:15px; border-radius:8px;">
+                        <h4>🔮 توقعات الشهر القادم</h4>
+                        <p id="predicted-visits" style="font-size:1.5rem; font-weight:bold;">-</p>
+                        <small>عدد الزيارات المتوقعة</small>
+                    </div>
+                    <div class="insight-card" style="background: #e8f5e9; padding:15px; border-radius:8px;">
+                        <h4>💰 توقعات الإيرادات</h4>
+                        <p id="predicted-revenue" style="font-size:1.5rem; font-weight:bold;">-</p>
+                        <small>زيادة متوقعة <span id="revenue-growth">0%</span></small>
+                    </div>
+                    <div class="insight-card" style="background: #fff3e0; padding:15px; border-radius:8px;">
+                        <h4>📦 توصيات المخزون</h4>
+                        <p id="inventory-recommendation">-</p>
+                        <small>أصناف تحتاج توريد</small>
+                    </div>
+                    <div class="insight-card" style="background: #f3e5f5; padding:15px; border-radius:8px;">
+                        <h4>👥 تحليل المرضى</h4>
+                        <p id="patient-insight">-</p>
+                        <small>توصيات تسويقية</small>
+                    </div>
+                </div>
+
+                <!-- مقارنة بين الأشهر -->
+                <div class="analytics-card" style="margin-top:20px; background:white; padding:20px; border-radius:8px;">
+                    <h3>📊 مقارنة بين الأشهر</h3>
+                    <div class="form-row" style="width:100%; max-width:500px;">
+                        <select id="ai-month1">
+                            <option value="1">يناير</option>
+                            <option value="2">فبراير</option>
+                            <option value="3">مارس</option>
+                            <option value="4">أبريل</option>
+                            <option value="5">مايو</option>
+                            <option value="6">يونيو</option>
+                            <option value="7">يوليو</option>
+                            <option value="8">أغسطس</option>
+                            <option value="9">سبتمبر</option>
+                            <option value="10">أكتوبر</option>
+                            <option value="11">نوفمبر</option>
+                            <option value="12">ديسمبر</option>
+                        </select>
+                        <select id="ai-month2">
+                            <option value="1">يناير</option>
+                            <option value="2">فبراير</option>
+                            <option value="3">مارس</option>
+                            <option value="4">أبريل</option>
+                            <option value="5">مايو</option>
+                            <option value="6">يونيو</option>
+                            <option value="7">يوليو</option>
+                            <option value="8">أغسطس</option>
+                            <option value="9">سبتمبر</option>
+                            <option value="10">أكتوبر</option>
+                            <option value="11">نوفمبر</option>
+                            <option value="12">ديسمبر</option>
+                        </select>
+                        <button onclick="compareMonths()" class="btn-primary">قارن</button>
+                    </div>
+                    <div id="month-comparison-result" style="margin-top:15px;"></div>
+                </div>
+
+                <!-- سجل التقارير -->
+                <div style="margin-top:20px;">
+                    <h3>📚 تقارير سابقة</h3>
+                    <table id="ai-reports-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الزيارات المتوقعة</th>
+                                <th>الإيرادات المتوقعة</th>
+                                <th>الدقة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===== المودالات ===== -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة مريض جديد</h2>
+            <input type="text" id="patientName" placeholder="اسم المريض">
+            <input type="text" id="patientPhone" placeholder="رقم الموبايل">
+            <div style="display: flex; gap: 10px;">
+                <input type="number" id="patientAge" placeholder="السن" style="flex: 2;">
+                <select id="patientGender" style="flex: 1;">
+                    <option value="ذكر">ذكر</option>
+                    <option value="أنثى">أنثى</option>
+                </select>
+            </div>
+            <input type="date" id="patientBirthday" placeholder="تاريخ الميلاد">
+            <textarea id="patientChronic" placeholder="الأمراض المزمنة (إن وجد)"></textarea>
+            <input type="text" id="patientCity" placeholder="المدينة">
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="saveNewPatient()">💾 حفظ</button>
+                <button class="btn-secondary" onclick="closeModal()">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="visitModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2 id="visitModalTitle">🩺 كشف جديد</h2>
+            <textarea id="diagnosis" placeholder="التشخيص" rows="3"></textarea>
+            <textarea id="prescription" placeholder="الروشتة" rows="3"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>📁 الأشعة:</label>
+                    <input type="text" id="scan_name" placeholder="وصف الأشعة" style="width:100%; margin-bottom:5px;">
+                    <input type="file" id="scan_file" accept="image/*,application/pdf" style="width:100%;">
+                    <div id="scan_preview" style="margin-top:5px;"></div>
+                </div>
+                <div style="flex: 1;">
+                    <label>🧪 التحاليل:</label>
+                    <input type="text" id="lab_name" placeholder="وصف التحليل" style="width:100%; margin-bottom:5px;">
+                    <input type="file" id="lab_file" accept="image/*,application/pdf" style="width:100%;">
+                    <div id="lab_preview" style="margin-top:5px;"></div>
+                </div>
+            </div>
+            <input type="number" id="total_fees" placeholder="قيمة الكشف">
+            <h4>📋 المستلزمات المستخدمة:</h4>
+            <div id="inventory-check-list"></div>
+            <h4>💊 الأدوية المصروفة:</h4>
+            <div id="pharmacy-check-list"></div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="saveVisit()">💾 حفظ الكشف</button>
+                <button class="btn-secondary" onclick="closeModal()">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="drugModal" class="modal">
+        <div class="modal-content small-modal">
+            <h3>➕ إضافة دواء جديد</h3>
+            <input type="text" id="drug_name" placeholder="اسم الدواء">
+            <input type="number" id="drug_stock" placeholder="الكمية">
+            <input type="number" id="drug_price" placeholder="سعر البيع">
+            <label style="display:block; margin:10px 0 5px;">تاريخ الصلاحية:</label>
+            <input type="date" id="drug_expiry" style="width:100%;">
+            <div class="modal-actions">
+                <button onclick="addNewDrug()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="patient-info-banner">
+                <div class="info-item">👤 المريض: <b id="hist-name">--</b></div>
+                <div class="info-item">🎂 السن: <b id="hist-age">--</b></div>
+                <div class="info-item">🚻 النوع: <b id="hist-gender">--</b></div>
+                <div class="info-item">⚠️ مزمن: <b id="hist-chronic">--</b></div>
+            </div>
+            <h4>📋 سجل الزيارات السابق</h4>
+            <div id="visits-list-container"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal()">🔚 إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expenseModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة مصروف</h2>
+            <select id="expense-category">
+                <option value="rent">إيجار</option>
+                <option value="salaries">مرتبات</option>
+                <option value="electricity">كهرباء</option>
+                <option value="water">مياه</option>
+                <option value="maintenance">صيانة</option>
+                <option value="other">أخرى</option>
+            </select>
+            <input type="number" id="expense-amount" placeholder="المبلغ">
+            <input type="text" id="expense-description" placeholder="وصف المصروف">
+
+            <input type="date" id="expense-date">
+            <select id="expense-payment">
+                <option value="cash">كاش</option>
+                <option value="card">بطاقة</option>
+                <option value="bank">تحويل بنكي</option>
+            </select>
+            <div class="modal-actions">
+                <button onclick="saveExpense()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="doctorModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة طبيب</h2>
+            <input type="text" id="doctor-name" placeholder="اسم الطبيب">
+            <input type="text" id="doctor-specialty" placeholder="التخصص">
+            <div class="form-row">
+                <label>نسبة الطبيب %</label>
+                <input type="number" id="doctor-percentage" value="50" min="0" max="100">
+            </div>
+            <select id="doctor-share-type">
+                <option value="percentage">نسبة مئوية</option>
+                <option value="fixed">مبلغ ثابت</option>
+            </select>
+            <div class="modal-actions">
+                <button onclick="saveDoctor()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="balanceModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>💰 تعديل رصيد المريض</h2>
+            <select id="balance-patient-select"></select>
+            <select id="balance-type">
+                <option value="credit">دائن (للمريض)</option>
+                <option value="debit">مدين (على المريض)</option>
+            </select>
+            <input type="number" id="balance-amount" placeholder="المبلغ">
+            <textarea id="balance-reason" placeholder="سبب الإضافة"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveBalance()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="insuranceCompanyModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة شركة تأمين</h2>
+            <input type="text" id="company-name" placeholder="اسم الشركة">
+            <input type="text" id="company-phone" placeholder="رقم الاتصال">
+            <input type="email" id="company-email" placeholder="البريد الإلكتروني">
+            <input type="text" id="company-contact" placeholder="الشخص المسؤول">
+            <textarea id="company-notes" placeholder="ملاحظات"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveInsuranceCompany()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="packageModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة باقة تأمين</h2>
+            <input type="text" id="package-name" placeholder="اسم الباقة">
+            <div class="form-row">
+                <input type="number" id="package-coverage" placeholder="نسبة التغطية %" min="0" max="100">
+                <input type="number" id="package-max" placeholder="الحد الأقصى">
+            </div>
+            <div class="form-row">
+                <input type="number" id="package-premium" placeholder="القسط">
+                <select id="package-period">
+                    <option value="monthly">شهري</option>
+                    <option value="yearly">سنوي</option>
+                </select>
+            </div>
+            <textarea id="package-benefits" placeholder="المزايا (علاجات مغطاة)"></textarea>
+            <div class="modal-actions">
+                <button onclick="savePackage()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="patientInsuranceModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ ملف تأميني لمريض</h2>
+            <select id="insurance-patient-select">
+                <option value="">اختر مريض...</option>
+            </select>
+            <select id="insurance-company-select">
+                <option value="">اختر شركة تأمين...</option>
+            </select>
+            <select id="insurance-package-select">
+                <option value="">اختر الباقة...</option>
+            </select>
+            <input type="text" id="insurance-member-id" placeholder="رقم العضوية">
+            <input type="date" id="insurance-start-date">
+            <input type="date" id="insurance-end-date">
+            <div class="form-row">
+                <input type="number" id="insurance-limit" placeholder="الحد الأقصى" value="10000">
+                <input type="number" id="insurance-used" placeholder="المستخدم" value="0">
+            </div>
+            <select id="insurance-status">
+                <option value="active">نشط</option>
+                <option value="expired">منتهي</option>
+                <option value="suspended">موقوف</option>
+            </select>
+            <div class="modal-actions">
+                <button onclick="savePatientInsurance()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="claimModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>📄 إنشاء مطالبة تأمين</h2>
+            <select id="claim-patient-select">
+                <option value="">اختر مريض (مؤمن عليه)...</option>
+            </select>
+            <div style="margin: 15px 0; background: #f8f9fa; padding: 15px; border-radius: 8px;"
+                id="claim-insurance-info"></div>
+            <div class="form-row">
+                <input type="date" id="claim-from" placeholder="من تاريخ">
+                <input type="date" id="claim-to" placeholder="إلى تاريخ">
+            </div>
+            <h4>🔹 الخدمات المقدمة</h4>
+            <div id="claim-services-container"></div>
+            <button onclick="addClaimService()" class="btn-secondary" style="margin: 10px 0;">➕ إضافة خدمة</button>
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>إجمالي الخدمات:</span>
+                    <span id="claim-subtotal">0 ج.م</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>نسبة التغطية:</span>
+                    <span id="claim-coverage">0%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                    <span>المطلوب من التأمين:</span>
+                    <span id="claim-total">0 ج.م</span>
+                </div>
+            </div>
+            <textarea id="claim-notes" placeholder="ملاحظات إضافية"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveClaim()" class="btn-primary">💾 إنشاء المطالبة</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="warehouseModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة مخزن</h2>
+            <input type="text" id="warehouse-name" placeholder="اسم المخزن">
+            <select id="warehouse-type">
+                <option value="main">رئيسي</option>
+                <option value="sub">فرعي</option>
+            </select>
+            <input type="text" id="warehouse-location" placeholder="الموقع">
+            <input type="text" id="warehouse-manager" placeholder="المسؤول">
+            <textarea id="warehouse-notes" placeholder="ملاحظات"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveWarehouse()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="supplierModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة مورد</h2>
+            <input type="text" id="supplier-name" placeholder="اسم المورد">
+            <input type="text" id="supplier-phone" placeholder="رقم الاتصال">
+            <input type="email" id="supplier-email" placeholder="البريد الإلكتروني">
+            <input type="text" id="supplier-company" placeholder="الشركة">
+            <input type="text" id="supplier-tax" placeholder="الرقم الضريبي">
+            <textarea id="supplier-address" placeholder="العنوان"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveSupplier()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="purchaseOrderModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>📦 أمر شراء جديد</h2>
+            <div class="form-row">
+                <select id="po-supplier">
+                    <option value="">اختر مورد...</option>
+                </select>
+                <select id="po-warehouse">
+                    <option value="">المخزن المستهدف...</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input type="date" id="po-date">
+                <input type="date" id="po-expected" placeholder="تاريخ التسليم المتوقع">
+            </div>
+            <h4>🔹 الأصناف</h4>
+            <div id="po-items-container"></div>
+            <button onclick="addPOItem()" class="btn-secondary" style="margin: 10px 0;">➕ إضافة صنف</button>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>الإجمالي:</span>
+                    <span id="po-total-amount">0 ج.م</span>
+                </div>
+            </div>
+            <select id="po-payment-status">
+                <option value="unpaid">غير مدفوع</option>
+                <option value="partial">مدفوع جزئيًا</option>
+                <option value="paid">مدفوع</option>
+            </select>
+            <textarea id="po-notes" placeholder="ملاحظات"></textarea>
+            <div class="modal-actions">
+                <button onclick="savePurchaseOrder()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="transferModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>🔄 تحويل مخزني</h2>
+            <select id="transfer-from">
+                <option value="">من مخزن...</option>
+            </select>
+            <select id="transfer-to">
+                <option value="">إلى مخزن...</option>
+            </select>
+            <select id="transfer-product">
+                <option value="">اختر صنف...</option>
+            </select>
+            <input type="number" id="transfer-qty" placeholder="الكمية" min="1">
+            <textarea id="transfer-reason" placeholder="سبب التحويل"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveTransfer()" class="btn-primary">💾 تحويل</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="wasteModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>⚠️ تسجيل تالف</h2>
+            <select id="waste-warehouse">
+                <option value="">اختر مخزن...</option>
+            </select>
+            <select id="waste-product">
+                <option value="">اختر صنف...</option>
+            </select>
+            <input type="number" id="waste-qty" placeholder="الكمية" min="1">
+            <select id="waste-reason">
+                <option value="expired">انتهاء صلاحية</option>
+                <option value="damaged">تالف</option>
+                <option value="lost">فقدان</option>
+                <option value="other">أخرى</option>
+            </select>
+            <textarea id="waste-notes" placeholder="ملاحظات"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveWaste()" class="btn-primary">💾 تسجيل</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="labModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ إضافة معمل</h2>
+            <input type="text" id="lab-name" placeholder="اسم المعمل">
+            <input type="text" id="lab-phone" placeholder="رقم الاتصال">
+            <input type="email" id="lab-email" placeholder="البريد الإلكتروني">
+            <input type="text" id="lab-contact" placeholder="الشخص المسؤول">
+            <input type="text" id="lab-address" placeholder="العنوان">
+            <textarea id="lab-notes" placeholder="ملاحظات"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveLab()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="labRequestModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>📋 طلب معمل جديد</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label>المريض</label>
+                    <select id="request-patient">
+                        <option value="">اختر مريض...</option>
+                    </select>
+                </div>
+                <div>
+                    <label>المعمل</label>
+                    <select id="request-lab" onchange="loadLabTemplates()">
+                        <option value="">اختر معمل...</option>
+                    </select>
+                </div>
+            </div>
+
+            <h4 style="margin-top: 15px;">🔹 التحاليل المطلوبة</h4>
+            <div id="request-tests-container"></div>
+            <button onclick="addTestItem()" class="btn-secondary" style="margin: 10px 0;">➕ إضافة تحليل</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                <div>
+                    <label>موعد الاستلام المتوقع</label>
+                    <input type="date" id="request-expected">
+                </div>
+                <div>
+                    <label>السعر</label>
+                    <input type="number" id="request-price" placeholder="السعر" value="0">
+                </div>
+            </div>
+            <label>ملاحظات</label>
+            <textarea id="request-notes" placeholder="أي ملاحظات إضافية"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveLabRequest()" class="btn-primary">💾 حفظ الطلب</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>🧪 إدخال نتائج التحليل</h2>
+            <h3 id="result-request-info"></h3>
+            <div id="result-tests-container"></div>
+            <label>ملاحظات النتائج</label>
+            <textarea id="result-notes" placeholder="أي ملاحظات على النتائج"></textarea>
+            <label>تحميل ملف النتائج (اختياري)</label>
+            <input type="file" id="result-file" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="modal-actions">
+                <button onclick="saveLabResult()" class="btn-primary">💾 حفظ النتائج</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="labTemplateModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>📝 إضافة قالب طلب</h2>
+            <input type="text" id="template-name" placeholder="اسم القالب">
+            <select id="template-lab">
+                <option value="">اختر معمل...</option>
+            </select>
+            <h4>التحاليل المطلوبة</h4>
+            <div id="template-tests-container"></div>
+            <button onclick="addTemplateTest()" class="btn-secondary" style="margin: 10px 0;">➕ إضافة تحليل</button>
+            <div class="form-row">
+                <input type="number" id="template-price" placeholder="السعر">
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveLabTemplate()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="employeeModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>➕ إضافة موظف جديد</h2>
+            <div class="form-row">
+                <input type="text" id="emp-username" placeholder="اسم المستخدم">
+                <input type="password" id="emp-password" placeholder="كلمة المرور">
+            </div>
+            <div class="form-row">
+                <input type="text" id="emp-name" placeholder="الاسم الكامل">
+                <select id="emp-role">
+                    <option value="admin">مدير</option>
+                    <option value="manager">مدير تنفيذي</option>
+                    <option value="doctor">طبيب</option>
+                    <option value="receptionist">موظف استقبال</option>
+                    <option value="accountant">محاسب</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input type="email" id="emp-email" placeholder="البريد الإلكتروني">
+                <input type="text" id="emp-phone" placeholder="رقم الهاتف">
+            </div>
+            <div class="form-row">
+                <input type="text" id="emp-position" placeholder="المسمى الوظيفي">
+                <input type="text" id="emp-department" placeholder="القسم">
+            </div>
+            <div class="form-row">
+                <input type="number" id="emp-salary" placeholder="الراتب الأساسي">
+                <select id="emp-shift">
+                    <option value="morning">صباحي (8ص - 4م)</option>
+                    <option value="evening">مسائي (4م - 12ص)</option>
+                    <option value="night">ليلي (12ص - 8ص)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveEmployee()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="taskModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>📋 مهمة جديدة</h2>
+            <input type="text" id="task-title" placeholder="عنوان المهمة">
+            <textarea id="task-desc" placeholder="وصف المهمة" rows="3"></textarea>
+            <select id="task-assignee">
+                <option value="">اختر الموظف...</option>
+            </select>
+            <div class="form-row">
+                <select id="task-priority">
+                    <option value="high">عالية</option>
+                    <option value="medium">متوسطة</option>
+                    <option value="low">منخفضة</option>
+                </select>
+                <input type="date" id="task-deadline">
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveTask()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatModal" class="modal">
+        <div class="modal-content medium-modal" style="height: 600px;">
+            <div class="chat-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 id="chat-with-name"></h3>
+                <button onclick="closeModal()"
+                    style="background: none; border: none; font-size: 20px; cursor:pointer;">✖️</button>
+            </div>
+            <div id="chat-messages" class="chat-messages"
+                style="height: 400px; overflow-y: auto; padding: 10px; background:#f9f9f9; border-radius:8px;"></div>
+            <div class="chat-input-area" style="display: flex; gap: 10px; margin-top: 10px;">
+                <input type="text" id="chat-input" placeholder="اكتب رسالتك..."
+                    style="flex: 1; padding: 10px; border:1px solid #ddd; border-radius:5px;">
+                <button onclick="sendMessage()" class="btn-primary">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>🧾 إضافة فاتورة جديدة</h2>
+            <label>المريض</label>
+            <select id="invoice-patient-select">
+                <option value="">اختر مريض...</option>
+            </select>
+            <label>تاريخ الفاتورة</label>
+            <input type="date" id="invoice-date">
+            <div style="margin: 15px 0;">
+                <h4>🔹 بنود الفاتورة</h4>
+                <div id="invoice-items-container"></div>
+                <button onclick="addInvoiceItem()" class="btn-secondary" style="margin-top: 10px;">➕ إضافة بند</button>
+            </div>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>المجموع:</span>
+                    <span id="invoice-subtotal">0 ج.م</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>الضريبة (14%):</span>
+                    <span id="invoice-tax">0 ج.م</span>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-top: 10px;">
+                    <span>الإجمالي:</span>
+                    <span id="invoice-total">0 ج.م</span>
+                </div>
+            </div>
+            <label>حالة الفاتورة</label>
+            <select id="invoice-status">
+                <option value="pending">غير مدفوعة</option>
+                <option value="paid">مدفوعة</option>
+                <option value="partial">مدفوعة جزئيًا</option>
+            </select>
+            <label>طريقة الدفع (اختياري)</label>
+            <select id="invoice-payment">
+                <option value="">---</option>
+                <option value="cash">كاش</option>
+                <option value="card">بطاقة</option>
+                <option value="bank">تحويل بنكي</option>
+            </select>
+            <textarea id="invoice-notes" placeholder="ملاحظات إضافية" rows="3"></textarea>
+            <div class="modal-actions">
+                <button onclick="saveManualInvoice()" class="btn-primary">💾 حفظ الفاتورة</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="campaignModal" class="modal">
+        <div class="modal-content medium-modal">
+            <h2>📢 حملة تسويقية جديدة</h2>
+            <input type="text" id="campaign-name" placeholder="اسم الحملة">
+            <div class="form-row">
+                <select id="campaign-segment">
+                    <option value="">اختر الفئة المستهدفة...</option>
+                </select>
+                <select id="campaign-template">
+                    <option value="">اختر قالب الرسالة...</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input type="date" id="campaign-date">
+                <select id="campaign-status">
+                    <option value="draft">مسودة</option>
+                    <option value="scheduled">مجدولة</option>
+                    <option value="active">نشطة</option>
+                </select>
+            </div>
+            <label>محتوى الرسالة</label>
+            <textarea id="campaign-content" rows="5" placeholder="محتوى الرسالة..."></textarea>
+            <div class="form-row">
+                <span>عدد المستلمين: <strong id="campaign-recipients">0</strong></span>
+                <button onclick="previewCampaign()" class="btn-secondary">🔍 معاينة</button>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveCampaign()" class="btn-primary">💾 حفظ الحملة</button>
+                <button onclick="sendCampaign()" class="btn-success"
+                    style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:10px;">📨
+                    إرسال الآن</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="segmentModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>👥 فئة مرضى جديدة</h2>
+            <input type="text" id="segment-name" placeholder="اسم الفئة">
+            <label>المعايير</label>
+            <div id="segment-conditions" style="margin-bottom:10px;"></div>
+            <button onclick="addSegmentCondition()" class="btn-secondary" style="margin: 10px 0;">➕ إضافة شرط</button>
+            <div class="form-row">
+                <span>عدد المرضى المطابقين: <strong id="segment-count">0</strong></span>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveSegment()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageTemplateModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>📝 قالب رسالة جديد</h2>
+            <input type="text" id="template-name" placeholder="اسم القالب">
+            <select id="template-type">
+                <option value="reminder">تذكير</option>
+                <option value="birthday">تهنئة بعيد ميلاد</option>
+                <option value="followup">متابعة بعد العلاج</option>
+                <option value="promotion">عرض ترويجي</option>
+                <option value="greeting">تهنئة بمناسبة</option>
+            </select>
+            <input type="text" id="template-subject" placeholder="عنوان الرسالة (اختياري)">
+            <label>محتوى الرسالة</label>
+            <textarea id="template-content" rows="5" placeholder="محتوى الرسالة..."></textarea>
+            <div class="form-row">
+                <span>المتغيرات المتاحة:</span>
+                <div id="template-variables" style="display:flex; gap:5px; flex-wrap:wrap; margin:10px 0;">
+                    <span class="variable-badge" onclick="insertVariable('{patient_name}')"
+                        style="background:#f0f0f0; padding:5px 10px; border-radius:15px; cursor:pointer;">{patient_name}</span>
+                    <span class="variable-badge" onclick="insertVariable('{age}')"
+                        style="background:#f0f0f0; padding:5px 10px; border-radius:15px; cursor:pointer;">{age}</span>
+                    <span class="variable-badge" onclick="insertVariable('{phone}')"
+                        style="background:#f0f0f0; padding:5px 10px; border-radius:15px; cursor:pointer;">{phone}</span>
+                    <span class="variable-badge" onclick="insertVariable('{appointment_date}')"
+                        style="background:#f0f0f0; padding:5px 10px; border-radius:15px; cursor:pointer;">{appointment_date}</span>
+                    <span class="variable-badge" onclick="insertVariable('{appointment_time}')"
+                        style="background:#f0f0f0; padding:5px 10px; border-radius:15px; cursor:pointer;">{appointment_time}</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveMessageTemplate()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scheduledMessageModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>⏰ جدولة رسالة</h2>
+            <select id="scheduled-type">
+                <option value="single">مرة واحدة</option>
+                <option value="daily">يومي</option>
+                <option value="weekly">أسبوعي</option>
+                <option value="monthly">شهري</option>
+            </select>
+            <select id="scheduled-template">
+                <option value="">اختر قالب...</option>
+            </select>
+            <select id="scheduled-segment">
+                <option value="">الفئة المستهدفة...</option>
+            </select>
+            <div class="form-row">
+                <input type="datetime-local" id="scheduled-datetime">
+            </div>
+            <div class="form-row">
+                <input type="text" id="scheduled-condition" placeholder="شرط الإرسال (مثلاً: بعد الكشف بيوم)">
+                <input type="number" id="scheduled-delay" placeholder="التأخير (بالساعات)">
+            </div>
+            <textarea id="scheduled-content" rows="3" placeholder="محتوى الرسالة..."></textarea>
+            <div class="modal-actions">
+                <button onclick="saveScheduledMessage()" class="btn-primary">💾 جدولة</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pointsHistoryModal" class="modal">
+        <div class="modal-content medium-modal">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 id="pointsHistoryTitle">📋 سجل نقاط المريض</h2>
+                <button onclick="closeModal()"
+                    style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div id="pointsHistoryContent" style="max-height:400px; overflow-y:auto;"></div>
+            <div class="modal-actions">
+                <button onclick="closeModal()" class="btn-secondary">❌ إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="redeemPointsModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>💰 استبدال نقاط</h2>
+            <p id="redeem-patient-info"></p>
+            <p>النقاط المتاحة: <strong id="redeem-available-points">0</strong></p>
+            <input type="number" id="redeem-points-input" min="0" step="10" placeholder="عدد النقاط">
+            <p>قيمة الخصم: <strong id="redeem-discount-value">0 ج.م</strong></p>
+            <p style="color:#666; font-size:0.9rem;">أقل نقاط للاستبدال: <span id="redeem-min-points">50</span></p>
+            <div class="modal-actions">
+                <button onclick="processRedeemPoints()" class="btn-primary">💸 استبدال</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loyaltySettingsModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>⚙️ إعدادات نظام الولاء</h2>
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                <input type="checkbox" id="loyalty-enabled" checked> تفعيل نظام النقاط
+            </label>
+            <div class="form-row">
+                <input type="number" id="points-per-visit" value="10" placeholder="نقاط لكل زيارة">
+                <input type="number" id="points-per-review" value="5" placeholder="نقاط لاستطلاع الرأي">
+            </div>
+            <div class="form-row">
+                <input type="number" id="points-per-referred" value="20" placeholder="نقاط لإحالة مريض">
+                <input type="number" id="points-value" value="1" placeholder="قيمة النقطة (جنيه)" step="0.1">
+            </div>
+            <div class="form-row">
+                <input type="number" id="min-redeem" value="50" placeholder="أقل نقاط للاستبدال">
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveLoyaltySettings()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editTierModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>✏️ تعديل المستوى</h2>
+            <input type="text" id="edit-tier-name" placeholder="اسم المستوى">
+            <div class="form-row">
+                <input type="number" id="edit-tier-min-points" placeholder="الحد الأدنى">
+                <input type="number" id="edit-tier-discount" placeholder="نسبة الخصم %">
+            </div>
+            <input type="color" id="edit-tier-color" value="#cd7f32" style="height:40px; width:100%;">
+            <div class="modal-actions">
+                <button onclick="saveTierChanges()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificationTemplateModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>➕ قالب تنبيه جديد</h2>
+            <select id="notify-template-event">
+                <option value="invoice_unpaid">فاتورة غير مدفوعة</option>
+                <option value="appointment_reminder">تذكير بموعد</option>
+                <option value="low_stock">نقص مخزون</option>
+                <option value="task_assigned">مهمة جديدة</option>
+                <option value="patient_birthday">عيد ميلاد مريض</option>
+                <option value="lab_result">نتيجة معمل</option>
+            </select>
+            <input type="text" id="notify-template-title" placeholder="عنوان التنبيه">
+            <textarea id="notify-template-content" placeholder="محتوى التنبيه" rows="3"></textarea>
+            <label>المستلمون</label>
+            <div class="form-row">
+                <select id="notify-template-roles" multiple size="3" style="width:100%;">
+                    <option value="admin">مدير</option>
+                    <option value="doctor">طبيب</option>
+                    <option value="receptionist">استقبال</option>
+                    <option value="accountant">محاسب</option>
+                    <option value="inventory_manager">مسؤول مخازن</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>
+                    <input type="checkbox" id="notify-template-sound" checked> تنبيه صوتي
+                </label>
+                <label>
+                    <input type="checkbox" id="notify-template-popup" checked> نافذة منبثقة
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveNotificationTemplate()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deviceModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>📱 تسجيل جهاز جديد</h2>
+            <input type="text" id="device-name" placeholder="اسم الجهاز (مثال: هاتف أحمد)">
+            <select id="device-type">
+                <option value="phone">هاتف ذكي</option>
+                <option value="smartwatch">ساعة ذكية</option>
+                <option value="tablet">تابلت</option>
+                <option value="computer">كمبيوتر</option>
+            </select>
+            <select id="device-os">
+                <option value="android">أندرويد</option>
+                <option value="ios">آيفون</option>
+                <option value="windows">ويندوز</option>
+                <option value="mac">ماك</option>
+            </select>
+            <div class="form-row">
+                <label>
+                    <input type="checkbox" id="device-push" checked> إشعارات لحظية
+                </label>
+                <label>
+                    <input type="checkbox" id="device-sound" checked> صوت
+                </label>
+                <label>
+                    <input type="checkbox" id="device-vibration" checked> اهتزاز
+                </label>
+            </div>
+            <div id="qr-code" style="text-align: center; margin: 20px 0;">
+                <p>امسح QR للاتصال</p>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveDevice()" class="btn-primary">💾 تسجيل</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>🔐 تغيير كلمة المرور</h2>
+            <div class="form-group">
+                <label>كلمة المرور القديمة</label>
+                <input type="password" id="old-password" placeholder="أدخل كلمة المرور القديمة">
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور الجديدة</label>
+                <input type="password" id="new-password" placeholder="أدخل كلمة المرور الجديدة">
+            </div>
+            <div class="form-group">
+                <label>تأكيد كلمة المرور الجديدة</label>
+                <input type="password" id="confirm-password" placeholder="أعد إدخال كلمة المرور الجديدة">
+            </div>
+            <div class="modal-actions">
+                <button onclick="submitChangePassword()" class="btn-primary">💾 حفظ</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content small-modal">
+            <h2>📧 استعادة كلمة المرور</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                أدخل بريدك الإلكتروني وسنرسل لك تعليمات استعادة كلمة المرور
+            </p>
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="reset-email" placeholder="example@domain.com">
+            </div>
+            <div class="modal-actions">
+                <button onclick="forgotPassword()" class="btn-primary">📧 إرسال</button>
+                <button onclick="closeModal()" class="btn-secondary">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال الفاتورة اليدوية -->
+    <div id="manualInvoiceModal" class="modal" style="display:none;">
+        <div class="modal-content invoice-modal-width">
+            <div class="modal-header">
+                <h2>إضافة فاتورة يدوية جديدة</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>اختر المريض:</label>
+                    <select id="manual-patient-id" class="form-control">
+                    </select>
+                </div>
+
+                <table class="manual-invoice-table">
+                    <thead>
+                        <tr>
+                            <th>البيان (الخدمة/المنتج)</th>
+                            <th width="80">الكمية</th>
+                            <th width="120">السعر</th>
+                            <th width="120">الإجمالي</th>
+                            <th width="40"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="manual-invoice-items">
+                    </tbody>
+                </table>
+
+                <button type="button" onclick="addInvoiceItem()" class="btn-add-item">
+                    <i class="fas fa-plus"></i> إضافة صنف جديد
+                </button>
+
+                <div class="invoice-totals-container">
+                    <div class="total-row">
+                        <span>الإجمالي الفرعي:</span>
+                        <span id="manual-subtotal">0.00</span> ج.م
+                    </div>
+                    <div class="total-row">
+                        <span>الضريبة (14%):</span>
+                        <span id="manual-tax">0.00</span> ج.م
+                    </div>
+                    <div class="total-row grand-total-style">
+                        <span>الإجمالي النهائي:</span>
+                        <span id="manual-total">0.00</span> ج.م
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="saveManualInvoice()" class="btn-save-invoice">حفظ وطباعة الفاتورة ✅</button>
+                <button onclick="closeModal()" class="btn-close-invoice">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <!-- ===== القوالب ===== -->
+    <template id="invoice-item-template">
+        <div class="invoice-item"
+            style="display: grid; grid-template-columns: 3fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center;">
+            <input type="text" placeholder="الوصف (مثال: كشف)" class="item-desc" style="padding: 6px;">
+            <input type="number" placeholder="الكمية" value="1" min="1" class="item-qty"
+                style="padding: 6px; width: 70px;">
+            <input type="number" placeholder="السعر" min="0" step="0.01" class="item-price"
+                style="padding: 6px; width: 90px;">
+            <button onclick="this.closest('.invoice-item').remove(); updateInvoiceTotals();" class="btn-stock-del"
+                style="padding: 6px 10px;">🗑️</button>
+        </div>
+    </template>
+
+    <template id="visit-template">
+        <div class="visit-modern-card"
+            style="background:white; border:1px solid #eee; border-radius:8px; margin-bottom:15px; overflow:hidden;">
+            <div class="card-header"
+                style="background:#f8f9fa; padding:10px 15px; display:flex; justify-content:space-between; border-bottom:1px solid #eee;">
+                <span class="v-date" style="color:#3498db; font-weight:bold;"></span>
+                <span class="v-fees" style="color:#27ae60; font-weight:bold;"></span>
+            </div>
+            <div class="card-body" style="padding:15px;">
+                <p><b>🩺 التشخيص:</b> <span class="v-diagnosis"></span></p>
+                <p><b>💊 الروشتة:</b> <span class="v-prescription"></span></p>
+                <div class="attachments-grid"
+                    style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:10px;">
+                    <div class="attachment-item" style="border:1px dashed #ccc; border-radius:5px; padding:10px;">
+                        <span>🖼️ الأشعة:</span>
+                        <p class="v-scan-desc" style="font-size:0.9rem;"></p>
+                        <span class="no-scan" style="color:#999;">لا يوجد ملف</span>
+                    </div>
+                    <div class="attachment-item" style="border:1px dashed #ccc; border-radius:5px; padding:10px;">
+                        <span>🧪 التحاليل:</span>
+                        <p class="v-lab-desc" style="font-size:0.9rem;"></p>
+                        <span class="no-lab" style="color:#999;">لا يوجد ملف</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="claim-service-template">
+        <div class="claim-service-item"
+            style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px;">
+            <input type="text" placeholder="وصف الخدمة" class="service-desc" style="padding: 6px;">
+            <input type="date" class="service-date" style="padding: 6px;">
+            <input type="number" placeholder="المبلغ" class="service-amount" style="padding: 6px;" min="0">
+            <button onclick="this.closest('.claim-service-item').remove(); updateClaimTotal();"
+                class="btn-stock-del">🗑️</button>
+        </div>
+    </template>
+
+    <template id="po-item-template">
+        <div class="po-item"
+            style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px;">
+            <select class="po-item-product" style="padding: 6px;">
+                <option value="">اختر صنف...</option>
+            </select>
+            <input type="number" placeholder="الكمية" class="po-item-qty" style="padding: 6px;" min="1">
+            <input type="number" placeholder="السعر" class="po-item-price" style="padding: 6px;" min="0">
+            <input type="number" placeholder="الإجمالي" class="po-item-total" style="padding: 6px;" readonly>
+            <button onclick="this.closest('.po-item').remove(); calculatePOTotal();" class="btn-stock-del">🗑️</button>
+        </div>
+    </template>
+
+    <template id="test-item-template">
+        <div class="test-item"
+            style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px;">
+            <input type="text" placeholder="اسم التحليل" class="test-name" style="padding: 6px;">
+            <input type="text" placeholder="النتيجة" class="test-result" style="padding: 6px;">
+            <input type="text" placeholder="الوحدة" class="test-unit" style="padding: 6px;">
+            <button onclick="this.closest('.test-item').remove();" class="btn-stock-del">🗑️</button>
+        </div>
+    </template>
+
+    <template id="template-test-template">
+        <div class="template-test-item"
+            style="display: grid; grid-template-columns: 3fr 1fr auto; gap: 8px; margin-bottom: 8px;">
+            <input type="text" placeholder="اسم التحليل" class="tpl-test-name" style="padding: 6px;">
+            <input type="text" placeholder="الوحدة" class="tpl-test-unit" style="padding: 6px;">
+            <button onclick="this.closest('.template-test-item').remove();" class="btn-stock-del">🗑️</button>
+        </div>
+    </template>
+
+    <script src="./js/finance-store.js"></script>
+
+    <script src="./js/app.js"></script>
+
+    <script src="./js/auth.js"></script>
+    <script src="./js/ui-core.js"></script>
+    <script src="./js/clinic-logic.js"></script>
+
+    <script src="./js/services.js"></script>
+</body>
+
+</html>
