@@ -1,11 +1,10 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, String, Integer, Float, DateTime
 from app.database import Base
 from datetime import datetime
+from .mixins import SyncMixin
 
-class InventoryItem(Base):
+class InventoryItem(Base, SyncMixin):
     __tablename__ = "inventory"
-
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     quantity = Column(Integer, default=0)
     min_stock_level = Column(Integer, default=5)

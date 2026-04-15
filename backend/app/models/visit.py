@@ -1,20 +1,22 @@
-from sqlalchemy import Column, String, Integer, Float, Text, ForeignKey, DateTime
+import uuid
+import datetime
+from sqlalchemy import Column, String, Float, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
-import datetime
+from .mixins import SyncMixin
 
-class Visit(Base):
+class Visit(Base, SyncMixin):
     __tablename__ = "visits"
     
-    id = Column(String, primary_key=True, index=True)
+    # توحيد الأنواع لنصوص
     patient_id = Column(String, ForeignKey("patients.id")) 
-    doctor_id = Column(Integer, ForeignKey("users.id"))
+    doctor_id = Column(String, ForeignKey("users.id"))
     
     diagnosis = Column(Text)
     prescription = Column(Text)
     total_fees = Column(Float, default=0.0)
-    doctor_share = Column(Float, default=0.0) # نصيب الدكتور من الكشف
+    doctor_share = Column(Float, default=0.0) 
     visit_date = Column(DateTime, default=datetime.datetime.utcnow)
 
-    # الربط مع كلاس المريض
     patient = relationship("Patient", back_populates="visits")
+    doctor = relationship("User", back_populates="visits_as_doctor")

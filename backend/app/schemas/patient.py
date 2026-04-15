@@ -1,8 +1,8 @@
-from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime # <--- تعديل هنا
 from typing import Optional
+from .base_sync import SyncBaseSchema
 
-class PatientBase(BaseModel):
+class PatientBase(SyncBaseSchema):
     name: str
     phone: Optional[str] = None
     age: Optional[int] = None
@@ -10,12 +10,8 @@ class PatientBase(BaseModel):
     chronic_diseases: Optional[str] = None
 
 class PatientCreate(PatientBase):
-    id: str
+    pass 
 
 class PatientOut(PatientBase):
-    id: str
-    loyalty_points: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+    loyalty_points: int = 0
+    created_at: Optional[datetime] = None # كدة كلمة datetime بقت معرفة صح

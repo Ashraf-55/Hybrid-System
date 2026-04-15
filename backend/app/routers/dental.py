@@ -6,6 +6,7 @@ from app.models.patient import Patient
 from app.schemas import ApiResponse # استيراد الرد الموحد
 from pydantic import BaseModel
 from typing import List
+from uuid import UUID
 
 router = APIRouter(prefix="/dental", tags=["Dental Chart"])
 
@@ -16,32 +17,21 @@ class ToothUpdate(BaseModel):
     notes: str = ""
 
 @router.post("/{patient_id}/update-tooth", response_model=ApiResponse)
-async def update_tooth_status(patient_id: str, data: ToothUpdate, db: Session = Depends(get_db)):
-    # 1. التأكد إن المريض موجود
-    patient = db.query(Patient).filter(Patient.id == patient_id).first()
-    if not patient:
-        raise HTTPException(status_code=404, detail="المريض غير موجود")
-
-    # 2. البحث عن سجل السنة
+async def update_tooth_status(patient_id: UUID, data: ToothUpdate, db: Session = Depends(get_db)):
     db_tooth = db.query(DentalChart).filter(
         DentalChart.patient_id == patient_id, 
         DentalChart.tooth_number == data.tooth_number
     ).first()
 
     if db_tooth:
-        db_tooth.condition = data.condition
-        db_tooth.notes = data.notes
+        for key, value in data.model_dump().items():
+            setattr(db_tooth, key, value)
     else:
-        new_tooth = DentalChart(
-            patient_id=patient_id,
-            tooth_number=data.tooth_number,
-            condition=data.condition,
-            notes=data.notes
-        )
+        new_tooth = DentalChart(patient_id=patient_id, **data.model_dump())
         db.add(new_tooth)
     
     db.commit()
-    return {"success": True, "message": f"تم تحديث بيانات السنة رقم {data.tooth_number} بنجاح", "data": None}
+    return {"success": True, "message": "Tooth updated", "data": None}
 
 @router.get("/{patient_id}/chart", response_model=ApiResponse)
 async def get_patient_chart(patient_id: str, db: Session = Depends(get_db)):

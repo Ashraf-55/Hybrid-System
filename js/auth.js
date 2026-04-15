@@ -1,11 +1,10 @@
 // ============================================================
 //  auth.js — منطق الأعمال (المرضى، المواعيد، الأطباء)
 //  التعديلات: Issues #1, #2, #5, #11, #15
+//  التعديل الجديد: توحيد مفتاح تخزين المستخدم إلى 'clinic_user'
 // ============================================================
 
-// ========== الصلاحيات حسب الدور ==========
-
-// ضيف دي في أول ملف auth.js
+// ========== 1. دوال تسجيل الدخول ==========
 async function login() {
     const userVal = document.getElementById('login-username').value;
     const passVal = document.getElementById('login-password').value;
@@ -20,31 +19,81 @@ async function login() {
         const response = await fetch('http://127.0.0.1:8000/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ 'username': userVal, 'password': passVal })
+            body: new URLSearchParams({
+                'username': userVal,
+                'password': passVal
+            })
         });
 
         const data = await response.json();
 
         if (response.ok) {
+            // ✅ التعديلات المطلوبة هنا:
+            // 1. تخزين التوكن
             localStorage.setItem('token', data.access_token);
-            localStorage.setItem('clinic_current_user', JSON.stringify(data.user));
-            // إخفاء صفحة اللوج إن
-            document.getElementById('login-page').style.display = 'none';
-            showToast('✅ أهلاً بك في النظام');
 
-            // تشغيل السيستم (الدوال دي موجودة في ملفاتك)
-            if (typeof showAppInterface === 'function') showAppInterface();
-            if (typeof renderAll === 'function') renderAll();
+            // 2. تخزين بيانات المستخدم بالمفتاح الموحد 'clinic_user'
+            // التأكد من وجود بيانات المستخدم في الرد (data.user)
+            const userData = data.user || {
+                id: userVal,
+                fullName: userVal,
+                role: 'receptionist',
+                ...data
+            };
+            localStorage.setItem('clinic_user', JSON.stringify(userData));
+
+            // 3. تعيين المتغير العام currentUser (إن وجد)
+            if (typeof currentUser !== 'undefined') {
+                window.currentUser = userData;
+            }
+
+            showToast('✅ تم تسجيل الدخول بنجاح');
+
+            // 4. الانتقال إلى لوحة التحكم وإعادة التحميل
+            setTimeout(() => {
+                window.location.hash = '#dashboard';
+                window.location.reload();
+            }, 300);
         } else {
-            showToast('❌ اليوزر ده مش متسجل في البايثون', 'error');
+            showToast('❌ ' + (data.detail || 'بيانات الدخول غير صحيحة'), 'error');
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = 'دخول';
         }
-    } catch (err) {
-        showToast('📡 اتأكد إن سيرفر البايثون شغال (Uvicorn)', 'error');
-    } finally {
+    } catch (error) {
+        console.error('Login error:', error);
+        showToast('⚠️ السيرفر مش شغال يا هندسة', 'error');
         loginBtn.disabled = false;
-        loginBtn.innerHTML = 'تسجيل الدخول';
+        loginBtn.innerHTML = 'دخول';
     }
 }
+
+// دالة مساعدة للحصول على المستخدم الحالي من التخزين الموحد
+function getCurrentUser() {
+    const userStr = localStorage.getItem('clinic_user');
+    if (userStr) {
+        try {
+            return JSON.parse(userStr);
+        } catch (e) {
+            console.error('Error parsing clinic_user:', e);
+            return null;
+        }
+    }
+    return null;
+}
+
+function logout() {
+    console.log("🔄 جاري تسجيل الخروج وإعادة التهيئة...");
+    // مسح كل التخزين المحلي
+    localStorage.clear();
+    if (typeof showToast === "function") {
+        showToast('👋 تم تسجيل الخروج.. نورتنا يا هندسة');
+    }
+    setTimeout(() => {
+        window.location.href = window.location.pathname;
+    }, 500);
+}
+
+// ========== 2. الصلاحيات حسب الدور ==========
 const ROLE_PERMISSIONS = {
     admin: ['*'],
     doctor: [
@@ -58,7 +107,16 @@ const ROLE_PERMISSIONS = {
     ]
 };
 
+// استخدام الدالة الجديدة للحصول على المستخدم
+function getCurrentUserForPermissions() {
+    const user = getCurrentUser();
+    if (user) return user;
+    // fallback للمتغير العام القديم إذا كان موجوداً
+    return (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null;
+}
+
 function hasPermission(action) {
+    const currentUser = getCurrentUserForPermissions();
     if (!currentUser) return false;
     const role = currentUser.role || 'receptionist';
     const perms = ROLE_PERMISSIONS[role] || [];
@@ -75,6 +133,7 @@ function enforcePermission(action, fallback = null) {
 }
 
 function applyRoleRestrictions() {
+    const currentUser = getCurrentUserForPermissions();
     if (!currentUser) return;
     const role = currentUser.role || 'receptionist';
     if (role === 'admin') return;
@@ -101,8 +160,7 @@ function applyRoleRestrictions() {
     if (badge) badge.innerText = roleNames[role] || role;
 }
 
-
-// ========== منع تكرار المرضى ==========
+// ========== 3. منع تكرار المرضى ==========
 function validatePatientUniqueness(phone, nationalId, excludeId = null) {
     const others = excludeId ? patients.filter(p => p.id !== excludeId) : patients;
 
@@ -123,8 +181,7 @@ function validatePatientUniqueness(phone, nationalId, excludeId = null) {
     return true;
 }
 
-
-// ========== توليد QR Code ==========
+// ========== 4. توليد QR Code ==========
 function generatePatientQR(patientId) {
     const clinicId = (typeof CLOUD_CONFIG !== 'undefined' && CLOUD_CONFIG.clinicId) || 'clinic';
     const baseUrl = window.location.origin + window.location.pathname;
@@ -152,8 +209,7 @@ function renderPatientQR(patientId, canvasId = 'patient-qr-canvas') {
     return qr;
 }
 
-
-// ========== المواعيد ==========
+// ========== 5. المواعيد ==========
 function loadAppointments() {
     const tbody = document.querySelector('#appointments-table tbody');
     if (!tbody) return;
@@ -161,7 +217,7 @@ function loadAppointments() {
         ? '<tr><td colspan="7" style="text-align:center;padding:30px;">📅 لا توجد مواعيد</td></tr>'
         : appointments.map(a => {
             const doctor = doctors.find(d => d.id === a.doctorId);
-            return `<tr>
+            return `</tr>
                 <td>${a.patient_name || '---'}</td>
                 <td>${a.type || 'كشف'}</td>
                 <td>${a.patient_phone || '---'}</td>
@@ -205,10 +261,7 @@ function saveAppointment() {
         );
         if (conflict) {
             const doctor = doctors.find(d => d.id === doctorId);
-            showToast(
-                `⛔ الطبيب ${doctor?.name || ''} لديه موعد محجوز بالفعل في ${date} الساعة ${time}`,
-                'error'
-            );
+            showToast(`⛔ الطبيب ${doctor?.name || ''} لديه موعد محجوز بالفعل في ${date} الساعة ${time}`, 'error');
             return;
         }
     }
@@ -283,8 +336,7 @@ function populateDoctorSelectForAppointment() {
         doctors.map(d => `<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
 }
 
-
-// ========== الصيدلية ==========
+// ========== 6. الصيدلية ==========
 function addNewDrug() {
     const name = document.getElementById('drug_name').value.trim();
     const stock = parseInt(document.getElementById('drug_stock').value);
@@ -293,7 +345,8 @@ function addNewDrug() {
     const minStock = parseInt(document.getElementById('drug_min_stock')?.value) || 5;
 
     if (!name || isNaN(stock) || stock <= 0) {
-        showToast('بيانات الدواء ناقصة', 'warning'); return;
+        showToast('بيانات الدواء ناقصة', 'warning');
+        return;
     }
     pharmacy.push({
         id: generateId(), name, stock, price, expiry,
@@ -316,18 +369,16 @@ function renderPharmacy() {
             const isLowStock = drug.stock <= (drug.minStock || 5);
             return `<tr>
                 <td>${drug.name}</td>
-                <td class="${isLowStock ? 'status-low' : ''}"><strong>${drug.stock}</strong>
-                    ${isLowStock ? ' ⚠️' : ''}</td>
+                <td class="${isLowStock ? 'status-low' : ''}"><strong>${drug.stock}</strong>${isLowStock ? ' ⚠️' : ''}</td>
                 <td>${drug.price} ج.م</td>
-                <td class="${expiryInfo.cssClass}">${drug.expiry || 'غير محدد'}
-                    ${expiryInfo.badge}</td>
+                <td class="${expiryInfo.cssClass}">${drug.expiry || 'غير محدد'}${expiryInfo.badge}</td>
                 <td>${drug.minStock || 5}</td>
                 <td>
                     <button onclick="updateDrugStock('${drug.id}',5)" class="btn-stock-plus">+5</button>
                     <button onclick="updateDrugStock('${drug.id}',-1)" class="btn-stock-minus">-1</button>
                     <button onclick="deleteDrug('${drug.id}')" class="btn-stock-del">حذف</button>
-                </td>
-            </tr>`;
+                 </td>
+            </table>`;
         }).join('');
 }
 
@@ -386,14 +437,13 @@ function searchDrugs() {
                     <button onclick="updateDrugStock('${drug.id}',5)" class="btn-stock-plus">+5</button>
                     <button onclick="updateDrugStock('${drug.id}',-1)" class="btn-stock-minus">-1</button>
                     <button onclick="deleteDrug('${drug.id}')" class="btn-stock-del">حذف</button>
-                </td>
+                 </td>
             </tr>`;
         }).join('')
         : '<tr><td colspan="6" style="text-align:center;">لا توجد نتائج</td></tr>';
 }
 
-
-// ========== المصروفات ==========
+// ========== 7. المصروفات ==========
 function openExpenseModal() {
     const dateEl = document.getElementById('expense-date');
     if (dateEl) dateEl.value = getTodayDate();
@@ -403,6 +453,7 @@ function openExpenseModal() {
 
 function saveExpense() {
     if (!enforcePermission('save_expense')) return;
+    const currentUser = getCurrentUserForPermissions();
     const category = document.getElementById('expense-category')?.value || 'other';
     const description = document.getElementById('expense-description')?.value.trim() || '';
     const amount = parseFloat(document.getElementById('expense-amount')?.value || '0');
@@ -455,8 +506,7 @@ function deleteExpense(id) {
     showToast('تم حذف المصروف', 'info');
 }
 
-
-// ========== الأطباء ==========
+// ========== 8. الأطباء ==========
 function openDoctorModal() {
     document.getElementById('doctorModal').style.display = 'block';
 }
@@ -589,7 +639,7 @@ function viewDoctorEarningsHistory(doctorId) {
                 </tr>
             </tfoot>
         </table>
-        <script>window.print();</script></body></html>`);
+        <script>window.print();<\/script></body></html>`);
     win.document.close();
 }
 
@@ -620,7 +670,7 @@ function viewDoctorStatement(doctorId) {
                 </tr>`;
     }).join('') || '<tr><td colspan="4" style="text-align:center;">لا توجد زيارات</td></tr>'}</tbody>
         </table>
-        <script>window.print();</script></body></html>`);
+        <script>window.print();<\/script></body></html>`);
     win.document.close();
 }
 
@@ -629,8 +679,7 @@ function deleteDoctor(id) {
     saveAllData(); loadDoctors(); showToast('تم حذف الطبيب', 'info');
 }
 
-
-// ========== أرصدة المرضى ==========
+// ========== 9. أرصدة المرضى ==========
 function loadBalances() {
     const tbody = document.querySelector('#balance-table tbody');
     if (!tbody) return;
@@ -673,8 +722,7 @@ function returnMoney(patientId) {
     }
 }
 
-
-// ========== التأمين ==========
+// ========== 10. التأمين ==========
 function openInsuranceCompanyModal() { document.getElementById('insuranceCompanyModal').style.display = 'block'; }
 
 function saveInsuranceCompany() {
@@ -698,12 +746,19 @@ function loadInsuranceCompanies() {
     const tbody = document.querySelector('#insurance-companies-table tbody');
     if (!tbody) return;
     tbody.innerHTML = !insuranceCompanies.length
-        ? '<tr><td colspan="5" style="text-align:center;">لا توجد شركات تأمين</td></tr>'
+        ? '<td><td colspan="5" style="text-align:center;">لا توجد شركات تأمين</td></tr>'
         : insuranceCompanies.map(c => {
             const pkgs = insurancePackages.filter(p => p.companyId === c.id);
-            return `<tr><td><strong>${c.name}</strong></td><td>${c.phone || '---'}</td><td>${c.email || '---'}</td><td>${pkgs.length}</td>
-                <td><button onclick="showPackages('${c.id}','${c.name}')" class="btn-stock-plus">📦 الباقات</button>
-                <button onclick="deleteInsuranceCompany('${c.id}')" class="btn-stock-del">🗑️</button></td></tr>`;
+            return `<tr>
+                <td><strong>${c.name}</strong></td>
+                <td>${c.phone || '---'}</td>
+                <td>${c.email || '---'}</td>
+                <td>${pkgs.length}</td>
+                <td>
+                    <button onclick="showPackages('${c.id}','${c.name}')" class="btn-stock-plus">📦 الباقات</button>
+                    <button onclick="deleteInsuranceCompany('${c.id}')" class="btn-stock-del">🗑️</button>
+                </td>
+            </tr>`;
         }).join('');
     setElementText('companies-count', insuranceCompanies.length);
 }
@@ -721,11 +776,13 @@ function loadPackages(companyId) {
     const pkgs = insurancePackages.filter(p => p.companyId === companyId);
     tbody.innerHTML = !pkgs.length
         ? '<tr><td colspan="5" style="text-align:center;">لا توجد باقات</td></tr>'
-        : pkgs.map(pkg => `<tr><td><strong>${pkg.name}</strong></td><td>${pkg.coverage}%</td>
+        : pkgs.map(pkg => `<tr>
+            <td><strong>${pkg.name}</strong></td>
+            <td>${pkg.coverage}%</td>
             <td>${pkg.maxAmount?.toLocaleString()} ج.م</td>
             <td>${pkg.premium?.toLocaleString()} ج.م / ${pkg.period === 'monthly' ? 'شهري' : 'سنوي'}</td>
             <td><button onclick="deletePackage('${pkg.id}')" class="btn-stock-del">🗑️</button></td>
-         ve`).join('');
+        </tr>`);
     setElementText('packages-count', pkgs.length);
 }
 
@@ -810,17 +867,20 @@ function loadPatientInsurance() {
     const tbody = document.querySelector('#patient-insurance-table tbody');
     if (!tbody) return;
     tbody.innerHTML = !patientInsurance.length
-        ? ' hilab<td colspan="7" style="text-align:center;">لا توجد ملفات تأمينية</td> </tr>'
+        ? '<tr><td colspan="7" style="text-align:center;">لا توجد ملفات تأمينية</td></tr>'
         : patientInsurance.map(ins => {
             const isExpired = new Date(ins.endDate) < new Date();
             const cls = isExpired ? 'status-low' : ins.status === 'active' ? 'status-ok' : 'expiry-warning';
             const text = isExpired ? 'منتهي' : ins.status === 'active' ? 'نشط' : 'موقوف';
             return `<tr>
-                <td>${ins.patientName}</td><td>${ins.companyName}</td><td>${ins.packageName}</td>
-                <td>${ins.memberId}</td><td>${ins.endDate}</td>
+                <td>${ins.patientName}</td>
+                <td>${ins.companyName}</td>
+                <td>${ins.packageName}</td>
+                <td>${ins.memberId}</td>
+                <td>${ins.endDate}</td>
                 <td class="${cls}">${text}</td>
                 <td><button onclick="deletePatientInsurance('${ins.id}')" class="btn-stock-del">🗑️</button></td>
-             </tr>`;
+              </tr>`;
         }).join('');
     setElementText('insured-patients-count2', patientInsurance.filter(i => i.status === 'active').length);
 }
@@ -932,13 +992,17 @@ function loadClaims(filter = 'all') {
     setElementText('pending-claims-count2', insuranceClaims.filter(c => c.status === 'pending').length);
     tbody.innerHTML = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(c => `
         <tr>
-            <td><strong>${c.claimNumber}</strong></td><td>${c.patientName}</td><td>${c.companyName}</td>
-            <td>${c.fromDate} إلى ${c.toDate}</td><td>${formatCurrency(c.claimAmount)}</td>
-            <td>${formatCurrency(c.paidAmount || 0)}</td><td>${formatCurrency(c.remainingAmount || c.claimAmount)}</td>
+            <td><strong>${c.claimNumber}</strong></td>
+            <td>${c.patientName}</td>
+            <td>${c.companyName}</td>
+            <td>${c.fromDate} إلى ${c.toDate}</td>
+            <td>${formatCurrency(c.claimAmount)}</td>
+            <td>${formatCurrency(c.paidAmount || 0)}</td>
+            <td>${formatCurrency(c.remainingAmount || c.claimAmount)}</td>
             <td class="${sCls[c.status] || ''}">${sText[c.status] || c.status}</td>
             <td><button onclick="updateClaimPayment('${c.id}')" class="btn-stock-plus">💰</button>
             <button onclick="deleteClaim('${c.id}')" class="btn-stock-del">🗑️</button></td>
-        </tr>`).join('');
+        </tr>`);
 }
 
 function updateClaimPayment(claimId) {
@@ -964,8 +1028,7 @@ function deleteClaim(id) {
     saveAllData(); loadClaims('all'); showToast('تم حذف المطالبة', 'info');
 }
 
-
-// ========== المخازن ==========
+// ========== 11. المخازن ==========
 function openWarehouseModal() { document.getElementById('warehouseModal').style.display = 'block'; }
 
 function saveWarehouse() {
@@ -985,7 +1048,7 @@ function loadWarehouses() {
     const tbody = document.querySelector('#warehouses-table tbody');
     if (!tbody) return;
     if (!warehouses.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد مخازن</td></tr>'; return;
+        tbody.innerHTML = '<td><td colspan="6" style="text-align:center;">لا توجد مخازن</td></tr>'; return;
     }
     setElementText('total-warehouses', warehouses.length);
     setElementText('main-warehouses', warehouses.filter(w => w.type === 'main').length);
@@ -994,10 +1057,12 @@ function loadWarehouses() {
     tbody.innerHTML = warehouses.map(w => `
         <tr>
             <td><strong>${w.name}</strong> ${w.type === 'main' ? '⭐' : ''}</td>
-            <td>${w.type === 'main' ? 'رئيسي' : 'فرعي'}</td><td>${w.location || '---'}</td>
-            <td>${w.manager || '---'}</td><td>${inventory.filter(i => i.warehouseId === w.id).length}</td>
+            <td>${w.type === 'main' ? 'رئيسي' : 'فرعي'}</td>
+            <td>${w.location || '---'}</td>
+            <td>${w.manager || '---'}</td>
+            <td>${inventory.filter(i => i.warehouseId === w.id).length}</td>
             <td><button onclick="deleteWarehouse('${w.id}')" class="btn-stock-del">🗑️</button></td>
-        </tr>`).join('');
+        </tr>`);
 }
 
 function deleteWarehouse(id) {
@@ -1005,8 +1070,7 @@ function deleteWarehouse(id) {
     saveAllData(); loadWarehouses(); showToast('تم حذف المخزن', 'info');
 }
 
-
-// ========== الموردين ==========
+// ========== 12. الموردين ==========
 function openSupplierModal() { document.getElementById('supplierModal').style.display = 'block'; }
 
 function saveSupplier() {
@@ -1034,8 +1098,11 @@ function loadSuppliers() {
         const last = purchaseOrders.filter(po => po.supplierId === s.id)
             .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
         return `<tr>
-            <td><strong>${s.name}</strong></td><td>${s.phone || '---'}</td><td>${s.email || '---'}</td>
-            <td>${(s.balance || 0).toLocaleString()} ج.م</td><td>${last ? last.date : '---'}</td>
+            <td><strong>${s.name}</strong></td>
+            <td>${s.phone || '---'}</td>
+            <td>${s.email || '---'}</td>
+            <td>${(s.balance || 0).toLocaleString()} ج.م</td>
+            <td>${last ? last.date : '---'}</td>
             <td><button onclick="openPurchaseOrderModal('${s.id}')" class="btn-stock-plus">📦 أمر شراء</button>
             <button onclick="deleteSupplier('${s.id}')" class="btn-stock-del">🗑️</button></td>
         </tr>`;
@@ -1048,8 +1115,7 @@ function deleteSupplier(id) {
     saveAllData(); loadSuppliers(); showToast('تم حذف المورد', 'info');
 }
 
-
-// ========== أوامر الشراء ==========
+// ========== 13. أوامر الشراء ==========
 function openPurchaseOrderModal(supplierId = '') {
     const supplierSelect = document.getElementById('po-supplier');
     supplierSelect.innerHTML = '<option value="">اختر مورد...</option>' +
@@ -1152,13 +1218,17 @@ function loadPurchaseOrders(filter = 'all') {
     setElementText('po-unpaid', formatCurrency(purchaseOrders.reduce((s, po) => s + (po.remainingAmount || 0), 0)));
     tbody.innerHTML = filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(po => `
         <tr>
-            <td><strong>${po.poNumber}</strong></td><td>${po.supplierName}</td><td>${po.date}</td>
-            <td>${po.items.length}</td><td>${formatCurrency(po.totalAmount)}</td>
-            <td>${formatCurrency(po.paidAmount || 0)}</td><td>${formatCurrency(po.remainingAmount || po.totalAmount)}</td>
+            <td><strong>${po.poNumber}</strong></td>
+            <td>${po.supplierName}</td>
+            <td>${po.date}</td>
+            <td>${po.items.length}</td>
+            <td>${formatCurrency(po.totalAmount)}</td>
+            <td>${formatCurrency(po.paidAmount || 0)}</td>
+            <td>${formatCurrency(po.remainingAmount || po.totalAmount)}</td>
             <td class="${sCls[po.status] || ''}">${sText[po.status] || po.status}</td>
             <td><button onclick="receivePO('${po.id}')" class="btn-stock-plus">📥 استلام</button>
             <button onclick="deletePO('${po.id}')" class="btn-stock-del">🗑️</button></td>
-        </tr>`).join('');
+        </tr>`);
 }
 
 function receivePO(poId) {
@@ -1193,8 +1263,7 @@ function filterPO(filter) {
     loadPurchaseOrders(filter);
 }
 
-
-// ========== تحويلات المخزون ==========
+// ========== 14. تحويلات المخزون ==========
 function openTransferModal() {
     const opts = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
     document.getElementById('transfer-from').innerHTML = '<option value="">من مخزن...</option>' + opts;
@@ -1210,6 +1279,7 @@ function saveTransfer() {
     const productId = document.getElementById('transfer-product').value;
     const qty = parseInt(document.getElementById('transfer-qty').value);
     const reason = document.getElementById('transfer-reason').value.trim();
+    const currentUser = getCurrentUserForPermissions();
     if (!fromId || !toId || !productId || !qty || qty <= 0) { showToast('أكمل البيانات', 'warning'); return; }
     if (fromId === toId) { showToast('لا يمكن التحويل لنفس المخزن', 'warning'); return; }
     const product = inventory.find(i => i.id === productId);
@@ -1241,32 +1311,19 @@ function loadTransfers() {
         ? '<tr><td colspan="8" style="text-align:center;">لا توجد تحويلات</td></tr>'
         : [...stockTransfers].sort((a, b) => new Date(b.date) - new Date(a.date)).map(t => `
             <tr>
-                <td>${t.date}</td><td>${t.fromName}</td><td>${t.toName}</td>
-                <td>${t.productName}</td><td>${t.quantity}</td><td>${t.by || 'Admin'}</td>
+                <td>${t.date}</td>
+                <td>${t.fromName}</td>
+                <td>${t.toName}</td>
+                <td>${t.productName}</td>
+                <td>${t.quantity}</td>
+                <td>${t.by || 'Admin'}</td>
                 <td class="status-ok">مكتمل</td>
                 <td><button onclick="deleteTransfer('${t.id}')" class="btn-stock-del">🗑️</button></td>
-            </tr>`).join('');
+            </tr>`);
     setElementText('today-transfers', stockTransfers.filter(t => t.date === getTodayDate()).length);
 }
 
 function deleteTransfer(id) {
     stockTransfers = stockTransfers.filter(t => t.id !== id);
     saveAllData(); loadTransfers(); showToast('تم حذف التحويل', 'info');
-}
-function logout() {
-    console.log("🔄 جاري تسجيل الخروج وإعادة التهيئة...");
-
-    // 1. مسح كل البيانات المخزنة (التوكن والمستخدم)
-    localStorage.clear();
-
-    // 2. إظهار رسالة الوداع (اختياري لو عندك مكتبة التوست)
-    if (typeof showToast === "function") {
-        showToast('👋 تم تسجيل الخروج.. نورتنا يا هندسة');
-    }
-
-    // 3. الضربة القاضية: إعادة تحميل الصفحة لمسح الـ JS والـ Intervals من الذاكرة
-    // دي لوحدها كفيلة ترجع السيستم لحالة "الصفر" وتظهر صفحة اللوج إن
-    setTimeout(() => {
-        window.location.href = window.location.pathname;
-    }, 500); // تأخير بسيط عشان التوست يلحق يظهر لو موجود
 }

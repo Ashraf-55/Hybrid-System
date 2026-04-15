@@ -1,20 +1,24 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.expense import Expense
-from typing import List
+from app.models import Expense
+from app.dependencies import get_current_user
+from app.schemas import ApiResponse, ExpenseCreate # دلوقتى هتشتغل صح
+from uuid import UUID
 
 router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
-@router.get("/")
-def get_all_expenses(db: Session = Depends(get_db)):
-    return db.query(Expense).all()
+@router.get("/", response_model=ApiResponse)
+def get_expenses(db: Session = Depends(get_db), current=Depends(get_current_user)):
+    # بنجيب مصاريف العيادة الحالية بس
+    items = db.query(Expense).filter(Expense.clinic_id == current.clinic_id).all()
+    return {"success": True, "message": "قائمة المصاريف", "data": items}
 
-@router.post("/")
-def add_expense(title: str, amount: float, category: str, db: Session = Depends(get_db)):
-    import uuid
-    new_exp = Expense(id=str(uuid.uuid4()), title=title, amount=amount, category=category)
+@router.post("/", response_model=ApiResponse)
+def add_expense(exp: ExpenseCreate, db: Session = Depends(get_db), current=Depends(get_current_user)):
+    # بنستخدم الـ model_dump() وبنحقن الـ clinic_id أوتوماتيك
+    new_exp = Expense(**exp.model_dump(), clinic_id=current.clinic_id)
     db.add(new_exp)
     db.commit()
     db.refresh(new_exp)
-    return new_exp
+    return {"success": True, "message": "تم تسجيل المصروف", "data": new_exp}

@@ -1,3 +1,4 @@
+from .clinic import Clinic  
 from .user import User
 from .patient import Patient, PatientFile
 from .appointment import Appointment
@@ -7,3 +8,5 @@ from .visit import Visit
 from .accounting import Safe, FinancialTransaction
 from .treatment import TreatmentPlan  # <--- السطر ده هو اللي هيحل المشكلة
 from .dental import DentalChart
+from .hr import Employee
+from .mixins import SyncMixin

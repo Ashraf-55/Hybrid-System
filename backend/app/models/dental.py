@@ -1,12 +1,13 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
+from .mixins import SyncMixin
 
-class DentalChart(Base):
+class DentalChart(Base, SyncMixin):
     __tablename__ = "dental_charts"
 
-    id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(String, ForeignKey("patients.id")) # تأكد إن اسم الجدول صح
+    # ربط بـ UUID
+    patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id")) 
     
-    # السطر ده هو اللي ناقص أو فيه غلطة في الاسم
     patient = relationship("Patient", back_populates="dental_charts")

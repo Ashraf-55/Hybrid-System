@@ -1,13 +1,13 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, String, Float, DateTime
 from app.database import Base
 from datetime import datetime
+from .mixins import SyncMixin
 
-class Transaction(Base):
+class Transaction(Base, SyncMixin):
     __tablename__ = "transactions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    type = Column(String)  # "income" (دخل) أو "expense" (مصروف)
+    type = Column(String)  # "income" أو "expense"
     amount = Column(Float, nullable=False)
     description = Column(String)
-    category = Column(String)  # مثلاً: "كشف"، "إيجار"، "كهرباء"
+    category = Column(String)
     date = Column(DateTime, default=datetime.utcnow)

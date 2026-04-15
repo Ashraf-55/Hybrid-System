@@ -116,7 +116,7 @@ function loadInvoicesList() {
             <td>
                 <button class="btn-stock-plus" onclick="printInvoice(${realIdx})" title="طباعة">🖨️</button>
                 <button class="btn-stock-del"  onclick="deleteInvoice(${realIdx})" title="حذف">🗑️</button>
-            </td>
+              </td>
         </tr>`;
     }).join('');
 }
@@ -148,9 +148,9 @@ function printInvoice(index) {
                         <th style="border:1px solid #ddd;padding:8px;">الكمية</th>
                         <th style="border:1px solid #ddd;padding:8px;">السعر</th>
                         <th style="border:1px solid #ddd;padding:8px;">الإجمالي</th>
-                    </tr></thead>
+                      </tr></thead>
                     <tbody>${itemsHtml}</tbody>
-                </table>
+                  </table>
                 <div style="margin-top:30px;text-align:left;width:250px;float:left;">
                     <p>الإجمالي الفرعي: ${(inv.subtotal || inv.total || 0).toFixed(2)} ج.م</p>
                     <p>الضريبة (14%): ${(inv.tax || 0).toFixed(2)} ج.م</p>
@@ -527,12 +527,12 @@ async function initializeData() {
             if (raw) {
                 try {
                     const parsed = JSON.parse(raw);
-                    const target = eval(key); // المتغيرات العالمية المُعرَّفة مسبقاً
+                    const target = eval(key);
                     if (Array.isArray(target) && Array.isArray(parsed)) {
                         target.length = 0;
                         target.push(...parsed);
                     }
-                } catch (_) { /* تجاهل مفتاح تالف */ }
+                } catch (_) { }
             }
         });
 
@@ -586,66 +586,122 @@ function safeInterval(fn, ms, label = 'task') {
     return setInterval(wrapped, ms);
 }
 
-// ========== 55. التهيئة النهائية ==========
-// الترتيب الصحيح: Theme → Data → Auth → Permissions → UI → Intervals
+// ========== 55. الحارس الشخصي للنظام (SYSTEM GUARD) ==========
+// ✅ دالة موحدة للتحقق من صحة الجلسة - تعمل عند load
 
-window.onload = async function () {
-    try {
+/**
+ * systemGuard - الحارس الشخصي للنظام
+ * يتم استدعاؤها عند تحميل الصفحة بالكامل (window load event)
+ * تتحقق من وجود token و clinic_user في localStorage
+ * إذا كانت البيانات صالحة: تخفي login-page وتظهر main-wrapper وتوجه إلى dashboard
+ * إذا لم تكن صالحة: تظهر صفحة اللوج إن فقط
+ */
+async function systemGuard() {
+    console.log("🛡️ الحارس الشخصي: بدء فحص الأمان...");
 
-        (function applyTheme() {
-            try {
-                const settings = JSON.parse(localStorage.getItem('clinic_settings') || '{}');
-                const theme = settings.theme || 'light';
-                document.documentElement.setAttribute('data-theme', theme);
-                document.body.classList.toggle('dark-mode', theme === 'dark');
-            } catch (_) { }
-        })();
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('clinic_user');
 
-        if (Array.isArray(notifications)) {
-            notifications = notifications.filter(n => n?.type !== 'patient_birthday');
-        }
-
-        await initializeData();
-
-        initDefaultNotificationTemplates();
-
-        checkAuth();
-
-        if (currentUser) {
-            if (typeof applyUserPermissions === 'function') applyUserPermissions(currentUser);
-            showAppInterface();
-            renderAll();
-            handleRouteChange();
-            startScheduledMessagesChecker();
-        }
-
-        // ── 7. المهام الدورية الآمنة (Issue #19) ──
-        safeInterval(updateDashboard, CONFIG.DASHBOARD_INTERVAL_MS, 'dashboard');
-        safeInterval(checkAutomaticNotifications, CONFIG.NOTIFICATION_CHECK_MS, 'notifications');
-        safeInterval(updateNotificationBadge, CONFIG.BADGE_REFRESH_MS, 'badge');
-        safeInterval(cleanupOldNotifications, CONFIG.CLEANUP_INTERVAL_MS, 'cleanup');
-
-        // ── 8. لقطة الأداء اليومية عند 11:55 م ──
-        const now = new Date();
-        const nextSnapshot = new Date(
-            now.getFullYear(), now.getMonth(), now.getDate(),
-            CONFIG.PERF_SNAPSHOT_HOUR, CONFIG.PERF_SNAPSHOT_MIN, 0
-        );
-        const msUntil = nextSnapshot - now;
-
-        const startDailySnapshot = () => {
-            savePerformanceSnapshot();
-            safeInterval(savePerformanceSnapshot, 86_400_000, 'perf-snapshot');
-        };
-
-        if (msUntil > 0) {
-            setTimeout(startDailySnapshot, msUntil);
-        } else {
-            // الوقت فات اليوم — ابدأ من الغد
-            setTimeout(startDailySnapshot, msUntil + 86_400_000);
-        }
-
-    } catch (e) {
-        console.error('[window.onload] ❌ خطأ فادح أثناء التهيئة:', e);
+    // الحالة 1: لا توجد بيانات جلسة صالحة
+    if (!token || !savedUser || savedUser === 'undefined' || savedUser === 'null') {
+        console.warn("⚠️ الحارس الشخصي: لا توجد جلسة صالحة، توجيه إلى صفحة تسجيل الدخول");
+        return goToLogin();
     }
-};
+
+    // الحالة 2: محاولة قراءة بيانات المستخدم
+    try {
+        const userData = JSON.parse(savedUser);
+
+        // التحقق من صحة بيانات المستخدم (وجود id أو role)
+        if (!userData || (!userData.id && !userData.role)) {
+            console.warn("⚠️ الحارس الشخصي: بيانات مستخدم غير صالحة");
+            localStorage.clear();
+            return goToLogin();
+        }
+
+        // تعيين المستخدم الحالي
+        window.currentUser = userData;
+
+        // إخفاء صفحة تسجيل الدخول وإظهار التطبيق الرئيسي
+        const loginPage = document.getElementById('login-page');
+        const mainWrapper = document.getElementById('main-wrapper');
+
+        if (loginPage) {
+            loginPage.style.display = 'none';
+            loginPage.classList.remove('login-fullpage');
+        }
+        if (mainWrapper) {
+            mainWrapper.style.display = 'block';
+        }
+
+        // إضافة كلاس للـ body لتطبيق أنماط الحالة المسجلة
+        document.body.classList.add('logged-in');
+
+        // تهيئة البيانات وعرض الواجهة
+        if (typeof initializeData === 'function') {
+            await initializeData();
+        }
+
+        if (typeof renderAll === 'function') {
+            renderAll();
+        }
+
+        // توجيه المستخدم إلى لوحة التحكم إذا لم يكن هناك هاش أو كان الهاش هو login
+        const currentHash = window.location.hash;
+        if (!currentHash || currentHash === '#login' || currentHash === '#login-page') {
+            window.location.hash = '#dashboard';
+        }
+
+        console.log("✅ الحارس الشخصي: تم التحقق بنجاح، المستخدم:", window.currentUser?.fullName || window.currentUser?.username);
+
+        // تحديث الواجهة بناءً على صلاحيات المستخدم
+        if (typeof applyRoleRestrictions === 'function') {
+            applyRoleRestrictions();
+        }
+
+    } catch (error) {
+        console.error("❌ الحارس الشخصي: خطأ في قراءة بيانات المستخدم:", error);
+        // في حالة حدوث خطأ في JSON.parse، نقوم بمسح localStorage بالكامل
+        localStorage.clear();
+        goToLogin();
+    }
+}
+
+/**
+ * goToLogin - توجيه المستخدم إلى صفحة تسجيل الدخول
+ */
+function goToLogin() {
+    const loginPage = document.getElementById('login-page');
+    const mainWrapper = document.getElementById('main-wrapper');
+
+    if (loginPage) {
+        loginPage.style.display = 'flex';
+        loginPage.classList.add('login-fullpage');
+    }
+    if (mainWrapper) {
+        mainWrapper.style.display = 'none';
+    }
+
+    document.body.classList.remove('logged-in');
+
+    if (window.location.hash !== '#login' && window.location.hash !== '#login-page') {
+        window.location.hash = '#login';
+    }
+}
+
+// ========== 56. التهيئة النهائية ==========
+// ✅ استخدام addEventListener بدلاً من window.onload لمنع التضارب
+// إزالة أي window.onload سابق وضمان وجود مستمع واحد فقط
+
+// التحقق من عدم وجود أكثر من مستمع لحدث load
+if (typeof window._systemGuardAttached === 'undefined') {
+    window._systemGuardAttached = true;
+
+    // إزالة أي مستمعين سابقين محتملين (لن يحدث تضارب)
+    window.removeEventListener('load', systemGuard);
+
+    // إضافة المستمع الجديد
+    window.addEventListener('load', systemGuard);
+
+    console.log("✅ تم تثبيت الحارس الشخصي (systemGuard) بنجاح");
+}
